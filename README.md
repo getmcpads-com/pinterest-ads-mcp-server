@@ -1,0 +1,1 @@
+# pinterest-ads-mcp-server
