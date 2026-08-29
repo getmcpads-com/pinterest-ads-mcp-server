@@ -1,0 +1,16 @@
+pinterest-ads-mcp-server
+Copyright 2026 GetMCPAds
+
+This product includes software developed at GetMCPAds (https://www.getmcpads.com).
+
+An open-source Model Context Protocol server for the Pinterest Ads API.
+It is self-hosted and unaffiliated with Pinterest.
+
+GetMCPAds also runs a managed gateway that covers Pinterest Ads alongside
+Meta Ads, Google Ads, TikTok Ads, Google Analytics and Search Console, with
+hosted OAuth and cross-platform reporting: https://www.getmcpads.com
+
+---
+
+Pinterest is a trademark of Pinterest, Inc. This project is not affiliated
+with, endorsed by, or sponsored by Pinterest, Inc.
