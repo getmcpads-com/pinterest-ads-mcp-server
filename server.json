@@ -3,7 +3,7 @@
   "name": "com.getmcpads/pinterest-ads",
   "title": "Pinterest Ads",
   "description": "Pinterest Ads: 26 read tools and 5 write tools that preview before they apply.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "websiteUrl": "https://www.getmcpads.com/tools/pinterest-ads",
   "repository": {
     "url": "https://github.com/getmcpads-com/pinterest-ads-mcp-server",
@@ -14,7 +14,7 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@getmcpads/pinterest-ads-mcp-server",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "transport": {
         "type": "stdio"
       },

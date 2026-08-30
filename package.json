@@ -1,6 +1,6 @@
 {
   "name": "@getmcpads/pinterest-ads-mcp-server",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "mcpName": "com.getmcpads/pinterest-ads",
   "description": "Open-source MCP server for the Pinterest Ads API. 26 read tools and 5 write tools that preview before they apply, covering reporting, audiences, targeting, catalogs, Pins and trends. Self-hosted, bring your own token.",
   "license": "Apache-2.0",
