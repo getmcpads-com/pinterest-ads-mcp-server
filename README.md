@@ -51,14 +51,14 @@ Pinterest shipped an official MCP server in June 2026, with authentication handl
 Pinterest's own systems. **It launched read-only**: an agent can pull performance data and
 account context, but cannot change a budget, pause a campaign or edit a bid.
 
-| | Pinterest's official server | This server | [getmcpads.com](https://www.getmcpads.com) |
+| | **This server** | Pinterest's official server | [getmcpads.com](https://www.getmcpads.com) |
 |---|---|---|---|
-| Hosting | Pinterest-hosted | **You host it.** stdio, local process | Hosted for you |
-| Data path | Through Pinterest's endpoint | **Direct to the API.** No intermediary | Through our gateway |
-| Writes | ❌ read-only at launch | ✅ **preview first**, applied only on `confirm: true` | ✅ preview first |
-| Auditable | No | **Yes.** Apache-2.0, read every line | This server, audited |
-| Modifiable | No | **Fork it** | No |
-| Auth | Handled by Pinterest | You bring a token, which is more setup | Hosted OAuth |
+| Hosting | **You host it.** stdio, local process | Pinterest-hosted | Hosted for you |
+| Data path | **Direct to the API.** No intermediary | Through Pinterest's endpoint | Through our gateway |
+| Writes | **Yes, preview first**, applied only on `confirm: true` | None, read-only at launch | Yes, preview first |
+| Auditable | **Yes.** Apache-2.0, read every line | No | This server, audited |
+| Modifiable | **Fork it** | No | No |
+| Auth | You bring a token, which is more setup | Handled by Pinterest | Hosted OAuth |
 
 **Choose Pinterest's** for the least setup, if reporting is all you need.
 **Choose this one** if you want your data to stay on your infrastructure, want to audit or
