@@ -2,8 +2,8 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "com.getmcpads/pinterest-ads",
   "title": "Pinterest Ads",
-  "description": "Pinterest Ads: 26 read tools and 5 write tools that preview before they apply.",
-  "version": "1.0.2",
+  "description": "Pinterest Ads: 28 read tools and 24 opt-in writes with previews and confirmation.",
+  "version": "1.1.0",
   "websiteUrl": "https://www.getmcpads.com/tools/pinterest-ads",
   "repository": {
     "url": "https://github.com/getmcpads-com/pinterest-ads-mcp-server",
@@ -14,7 +14,7 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@getmcpads/pinterest-ads-mcp-server",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "transport": {
         "type": "stdio"
       },
@@ -51,7 +51,13 @@
         },
         {
           "name": "PINTEREST_ENABLE_WRITES",
-          "description": "Set to 1 to register the 5 write tools.",
+          "description": "Set to 1 to expose 24 write tools. Default calls preview; confirm:true applies changes.",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "PINTEREST_ENVIRONMENT",
+          "description": "API environment: production (default) or sandbox. Use credentials issued for that environment.",
           "isRequired": false,
           "isSecret": false
         }

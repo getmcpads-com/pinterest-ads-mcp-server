@@ -48,14 +48,14 @@ test("the only host this server can reach is Pinterest", () => {
     for (const match of text.matchAll(/https:\/\/([a-z0-9.-]+)/gi)) {
       const host = match[1].replace(/\.$/, "");
       // Documentation links in comments and SPDX headers are not call targets.
-      if (host === "github.com" || host === "www.getmcpads.com" ||
+      if (host === "mcp.getmcpads.com" || host === "github.com" || host === "www.getmcpads.com" ||
           host === "modelcontextprotocol.io" || host.endsWith("developers.google.com")) continue;
       hosts.add(host);
     }
   }
   assert.deepEqual(
     [...hosts].sort(),
-    ["api.pinterest.com"],
+    ["api-sandbox.pinterest.com", "api.pinterest.com"],
     "A new outbound host appeared. That is a deliberate decision, not an accident.",
   );
 });

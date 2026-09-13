@@ -1,0 +1,5353 @@
+{
+  "serverInfo": {
+    "name": "@getmcpads/pinterest-ads-mcp-server",
+    "title": "Pinterest Ads MCP server: 28 read tools, 24 opt-in preview-first writes.",
+    "version": "1.1.0",
+    "websiteUrl": "https://www.getmcpads.com/tools/pinterest-ads",
+    "icons": [
+      {
+        "src": "https://mcp.getmcpads.com/icon.svg",
+        "mimeType": "image/svg+xml"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "pinterest_health_check",
+      "title": "pinterest health check",
+      "description": "Read-only Pinterest Ads health check. Verifies configured credentials, account access, delivery metrics access, and optional default account readability without exposing OAuth tokens.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "description": "Optional Pinterest ad account ID. Defaults to PINTEREST_AD_ACCOUNT_ID when configured."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_list_ad_accounts",
+      "title": "pinterest list ad accounts",
+      "description": "List Pinterest ad accounts accessible to the configured credentials.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_delivery_metrics",
+      "title": "pinterest get delivery metrics",
+      "description": "Read Pinterest resources/delivery_metrics. Use this to inspect Pinterest's official delivery metric metadata for sync or async reports.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "reportType": {
+            "type": "string",
+            "enum": [
+              "SYNC",
+              "ASYNC"
+            ],
+            "description": "Optional report type filter."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_validate_report",
+      "title": "pinterest validate report",
+      "description": "Validate and preview how a Pinterest report will execute. Returns sync/async routing, endpoint, level, columns, attribution settings, and warnings without calling performance endpoints.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "AD_ACCOUNT",
+              "CAMPAIGN",
+              "AD_GROUP",
+              "AD",
+              "PRODUCT_GROUP"
+            ],
+            "default": "CAMPAIGN",
+            "description": "Entity or aggregation level for the requested report."
+          },
+          "startDate": {
+            "type": "string",
+            "description": "First date of the reporting period, in YYYY-MM-DD format."
+          },
+          "endDate": {
+            "type": "string",
+            "description": "Last date of the reporting period, in YYYY-MM-DD format, on or after startDate."
+          },
+          "granularity": {
+            "type": "string",
+            "enum": [
+              "TOTAL",
+              "DAY",
+              "WEEK",
+              "MONTH",
+              "HOUR"
+            ],
+            "default": "DAY",
+            "description": "Time bucket used to aggregate reporting rows."
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "SPEND_IN_DOLLAR",
+              "IMPRESSION_1",
+              "CLICKTHROUGH_1",
+              "OUTBOUND_CLICK_1",
+              "REPIN_1",
+              "TOTAL_CHECKOUT",
+              "TOTAL_CHECKOUT_VALUE_IN_MICRO_DOLLAR",
+              "CHECKOUT_ROAS"
+            ],
+            "description": "Native Pinterest reporting column names. Discover supported columns before selecting metrics."
+          },
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "sync",
+              "async"
+            ],
+            "default": "auto",
+            "description": "Choose the supported synchronous, asynchronous or automatic report execution strategy."
+          },
+          "entityIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Exact IDs of the entities to include in the selected reporting level."
+          },
+          "targetingTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Native targeting categories used to break down delivery."
+          },
+          "clickWindowDays": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60,
+            "default": 30,
+            "description": "Click-through attribution window, in days."
+          },
+          "engagementWindowDays": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60,
+            "default": 30,
+            "description": "Engagement-through attribution window, in days."
+          },
+          "viewWindowDays": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60,
+            "default": 1,
+            "description": "View-through attribution window, in days."
+          },
+          "conversionReportTime": {
+            "type": "string",
+            "enum": [
+              "TIME_OF_AD_ACTION",
+              "TIME_OF_CONVERSION"
+            ],
+            "default": "TIME_OF_AD_ACTION",
+            "description": "Whether conversions are assigned to the ad action date or the conversion date."
+          },
+          "attributionTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "INDIVIDUAL",
+                "HOUSEHOLD"
+              ]
+            },
+            "description": "Provider attribution categories included in the report."
+          }
+        },
+        "required": [
+          "startDate",
+          "endDate"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_run_report",
+      "title": "pinterest run report",
+      "description": "Run a read-only Pinterest Ads report. Auto-routes old/wide or explicit async requests through Pinterest async reports. Uses raw Pinterest reporting column names.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "AD_ACCOUNT",
+              "CAMPAIGN",
+              "AD_GROUP",
+              "AD",
+              "PRODUCT_GROUP"
+            ],
+            "default": "CAMPAIGN",
+            "description": "Entity or aggregation level for the requested report."
+          },
+          "startDate": {
+            "type": "string",
+            "description": "First date of the reporting period, in YYYY-MM-DD format."
+          },
+          "endDate": {
+            "type": "string",
+            "description": "Last date of the reporting period, in YYYY-MM-DD format, on or after startDate."
+          },
+          "granularity": {
+            "type": "string",
+            "enum": [
+              "TOTAL",
+              "DAY",
+              "WEEK",
+              "MONTH",
+              "HOUR"
+            ],
+            "default": "DAY",
+            "description": "Time bucket used to aggregate reporting rows."
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "SPEND_IN_DOLLAR",
+              "IMPRESSION_1",
+              "CLICKTHROUGH_1",
+              "OUTBOUND_CLICK_1",
+              "REPIN_1",
+              "TOTAL_CHECKOUT",
+              "TOTAL_CHECKOUT_VALUE_IN_MICRO_DOLLAR",
+              "CHECKOUT_ROAS"
+            ],
+            "description": "Native Pinterest reporting column names. Discover supported columns before selecting metrics."
+          },
+          "executionMode": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "sync",
+              "async"
+            ],
+            "default": "auto",
+            "description": "Choose the supported synchronous, asynchronous or automatic report execution strategy."
+          },
+          "waitForReport": {
+            "type": "boolean",
+            "default": true,
+            "description": "False starts or polls an async report once and returns a resumable reportToken instead of waiting. Use the same query and token on the next call."
+          },
+          "reportToken": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "description": "Resume a previously returned async reporting token for this ad account; never starts a second job."
+          },
+          "entityIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Exact IDs of the entities to include in the selected reporting level."
+          },
+          "targetingTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Native targeting categories used to break down delivery."
+          },
+          "filters": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Filters combined according to this tool's query schema. Use provider field names and the declared operators."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5000,
+            "default": 500,
+            "description": "Maximum number of returned items or rows. The declared bounds and default apply; use pagination for additional results."
+          },
+          "clickWindowDays": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60,
+            "default": 30,
+            "description": "Click-through attribution window, in days."
+          },
+          "engagementWindowDays": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60,
+            "default": 30,
+            "description": "Engagement-through attribution window, in days."
+          },
+          "viewWindowDays": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60,
+            "default": 1,
+            "description": "View-through attribution window, in days."
+          },
+          "conversionReportTime": {
+            "type": "string",
+            "enum": [
+              "TIME_OF_AD_ACTION",
+              "TIME_OF_CONVERSION"
+            ],
+            "default": "TIME_OF_AD_ACTION",
+            "description": "Whether conversions are assigned to the ad action date or the conversion date."
+          },
+          "attributionTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "INDIVIDUAL",
+                "HOUSEHOLD"
+              ]
+            },
+            "description": "Provider attribution categories included in the report."
+          },
+          "reportingTimezone": {
+            "type": "string",
+            "enum": [
+              "PINTEREST_TIME_ZONE",
+              "AD_ACCOUNT_TIME_ZONE"
+            ],
+            "default": "PINTEREST_TIME_ZONE",
+            "description": "Provider reporting timezone selector. Keep it consistent when comparing periods."
+          }
+        },
+        "required": [
+          "startDate",
+          "endDate"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_creative_assets",
+      "title": "pinterest get creative assets",
+      "description": "Fetch Pinterest creative assets and period performance when available. Returns ads, pins, thumbnails/images/videos, campaign/ad group context, catalog signals, and asset classifications.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "startDate": {
+            "type": "string",
+            "description": "First date of the reporting period, in YYYY-MM-DD format."
+          },
+          "endDate": {
+            "type": "string",
+            "description": "Last date of the reporting period, in YYYY-MM-DD format, on or after startDate."
+          },
+          "campaignIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Restrict results to these campaign IDs."
+          },
+          "adGroupIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Restrict results to these ad group IDs."
+          },
+          "onlyWithPeriodDelivery": {
+            "type": "boolean",
+            "default": true,
+            "description": "Keep only creatives with observed delivery in the requested date range."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500,
+            "default": 100,
+            "description": "Maximum number of returned items or rows. The declared bounds and default apply; use pagination for additional results."
+          }
+        },
+        "required": [
+          "startDate",
+          "endDate"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_run_catalog_report",
+      "title": "pinterest run catalog report",
+      "description": "Run Pinterest catalog reporting by PRODUCT_GROUP or PRODUCT_ITEM. PRODUCT_ITEM history is limited to 92 days before today (UTC), with requests chunked into 31-day windows; older item performance cannot be retrieved by retrying. Use PRODUCT_GROUP for older catalog delivery totals, not individual SKU performance.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "breakdown": {
+            "type": "string",
+            "enum": [
+              "PRODUCT_GROUP",
+              "PRODUCT_ITEM"
+            ],
+            "default": "PRODUCT_GROUP",
+            "description": "Native reporting breakdown used to group results."
+          },
+          "startDate": {
+            "type": "string",
+            "description": "First date of the reporting period, in YYYY-MM-DD format."
+          },
+          "endDate": {
+            "type": "string",
+            "description": "Last date of the reporting period, in YYYY-MM-DD format, on or after startDate."
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Native Pinterest reporting column names. Discover supported columns before selecting metrics."
+          },
+          "productGroupIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Restrict reporting to these product group IDs."
+          },
+          "productItemIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Restrict reporting to these product item IDs."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5000,
+            "default": 500,
+            "description": "Maximum number of returned items or rows. The declared bounds and default apply; use pagination for additional results."
+          }
+        },
+        "required": [
+          "startDate",
+          "endDate"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_catalog_inventory",
+      "title": "pinterest get catalog inventory",
+      "description": "List Pinterest catalog inventory surfaces: catalogs, product groups, product group promotions, and optional product samples.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "includeProductSamples": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include a limited sample of product records alongside inventory diagnostics."
+          },
+          "sampleProductGroups": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "default": 5,
+            "description": "Maximum product groups to sample for inventory diagnostics."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_run_conversion_product_report",
+      "title": "pinterest run conversion product report",
+      "description": "Run Pinterest async conversion product reporting by brand, category, brand+category, SKU, or SKU group via reports/brand_category_sku. This is a restricted Pinterest feature: Standard API access alone does not guarantee availability for the client. It is separate from PRODUCT_ITEM spend reporting.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "reportName": {
+            "type": "string",
+            "default": "Pinterest Conversion Product Report",
+            "description": "Provider report name identifying the requested report recipe."
+          },
+          "startDate": {
+            "type": "string",
+            "description": "First date of the reporting period, in YYYY-MM-DD format."
+          },
+          "endDate": {
+            "type": "string",
+            "description": "Last date of the reporting period, in YYYY-MM-DD format, on or after startDate."
+          },
+          "granularity": {
+            "type": "string",
+            "enum": [
+              "TOTAL",
+              "WEEK",
+              "MONTH"
+            ],
+            "default": "TOTAL",
+            "description": "Time bucket used to aggregate reporting rows."
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "ADVERTISER",
+              "CAMPAIGN",
+              "AD_GROUP"
+            ],
+            "default": "CAMPAIGN",
+            "description": "Entity or aggregation level for the requested report."
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "TOTAL_CHECKOUT_CONVERSION_PRODUCT_QUANTITY",
+              "TOTAL_CHECKOUT_CONVERSION_PRODUCT_VALUE"
+            ],
+            "description": "ConversionProductReportingColumn names. Defaults measure product quantity and value attributed to checkout, not checkout event count. Standard ads metrics such as TOTAL_CHECKOUT, SPEND_IN_DOLLAR and CHECKOUT_ROAS are not supported by this endpoint."
+          },
+          "conversionProductAttributionType": {
+            "type": "string",
+            "enum": [
+              "DEFAULT",
+              "BRAND_ATTRIBUTION"
+            ],
+            "default": "DEFAULT",
+            "description": "Pinterest product-conversion attribution category."
+          },
+          "conversionProductBreakdown": {
+            "type": "string",
+            "enum": [
+              "PRODUCT_BRAND",
+              "PRODUCT_CATEGORY",
+              "PRODUCT_BRAND_AND_CATEGORY",
+              "PRODUCT_SKU",
+              "PRODUCT_SKU_GROUP"
+            ],
+            "default": "PRODUCT_BRAND_AND_CATEGORY",
+            "description": "Pinterest product-conversion grouping level."
+          },
+          "campaignIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Restrict results to these campaign IDs."
+          },
+          "adGroupIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Restrict results to these ad group IDs."
+          },
+          "productSkuIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Restrict product-conversion reporting to these SKU IDs."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5000,
+            "default": 500,
+            "description": "Maximum number of returned items or rows. The declared bounds and default apply; use pagination for additional results."
+          },
+          "clickWindowDays": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60,
+            "default": 30,
+            "description": "Click-through attribution window, in days."
+          },
+          "viewWindowDays": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60,
+            "default": 1,
+            "description": "View-through attribution window, in days."
+          },
+          "conversionReportTime": {
+            "type": "string",
+            "enum": [
+              "TIME_OF_AD_ACTION",
+              "TIME_OF_CONVERSION"
+            ],
+            "default": "TIME_OF_AD_ACTION",
+            "description": "Whether conversions are assigned to the ad action date or the conversion date."
+          }
+        },
+        "required": [
+          "startDate",
+          "endDate"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_list_ad_creatives",
+      "title": "pinterest list ad creatives",
+      "description": "List the ad account's ad creatives across every status (the API silently omits ARCHIVED ads unless asked) with their pin media resolved: public i.pinimg.com image URLs up to 1200px, video cover, and video_url when the app is allowed to read it. Catalog-driven formats are excluded by default.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "description": "Pinterest ad account ID. Defaults to the configured account."
+          },
+          "adIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 100,
+            "description": "Only these ads; cannot combine with campaignIds or adGroupIds."
+          },
+          "campaignIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Only ads in these campaigns"
+          },
+          "adGroupIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Only ads in these ad groups"
+          },
+          "includeArchived": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include ARCHIVED ads (the API omits them by default)"
+          },
+          "excludeCatalogFormats": {
+            "type": "boolean",
+            "default": true,
+            "description": "Skip catalog-driven ads whose visuals come from the product feed"
+          },
+          "maxAds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000,
+            "default": 250,
+            "description": "Ads scanned before media resolution"
+          },
+          "maxPins": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 40,
+            "description": "Unique pins resolved into media URLs. Each one costs an API call, and the Pinterest app quota is tight."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_write_schema",
+      "title": "pinterest get write schema",
+      "description": "Read the official Pinterest v5 native request schema and Sandbox limitations before composing a write.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "type": "string",
+            "enum": [
+              "CampaignCreateRequest",
+              "CampaignUpdateRequest",
+              "AdGroupCreateRequest",
+              "AdGroupUpdateRequest",
+              "AdCreateRequest",
+              "AdUpdateRequest",
+              "PinCreate",
+              "PinUpdate",
+              "BoardCreate",
+              "BoardWithUpdatePrivacyUpdate",
+              "MediaUploadCreate",
+              "CatalogCreate",
+              "CatalogsFeedCreateRequestSchema",
+              "CatalogsFeedUpdateRequestSchema",
+              "CatalogsProductGroupsCreateRequestSchema",
+              "CatalogsProductGroupsUpdateRequestSchema",
+              "CatalogsItemsBatchPostRequest",
+              "ProductGroupPromotionsCreate",
+              "ProductGroupPromotionsUpdateWithRequiredBody"
+            ],
+            "description": "Exact request schema name to inspect before composing a write payload."
+          }
+        },
+        "required": [
+          "request"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_account_entities",
+      "title": "pinterest get account entities",
+      "description": "Read Pinterest ad-account entities and configuration. Covers account, campaign, ad group, ad, product-group promotion, promotion, label, schedule, targeting template, and order-line inventory. Returns one API page and its bookmark for predictable live queries.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "entity": {
+            "type": "string",
+            "enum": [
+              "AD_ACCOUNT",
+              "CAMPAIGN",
+              "AD_GROUP",
+              "AD",
+              "PRODUCT_GROUP_PROMOTION",
+              "PROMOTION",
+              "LABEL",
+              "SCHEDULE",
+              "TARGETING_TEMPLATE",
+              "ORDER_LINE"
+            ],
+            "description": "Entity collection or level to inspect."
+          },
+          "entityId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Fetch one entity where Pinterest exposes a detail endpoint."
+          },
+          "adIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/adAccountId"
+            },
+            "minItems": 1,
+            "maxItems": 100,
+            "description": "For entity AD collections only: restrict to these reporting ad IDs."
+          },
+          "campaignIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/adAccountId"
+            },
+            "maxItems": 100,
+            "description": "Restrict results to these campaign IDs."
+          },
+          "adGroupIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/adAccountId"
+            },
+            "maxItems": 100,
+            "description": "Restrict results to these ad group IDs."
+          },
+          "entityStatuses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "description": "Native status values used to filter the entity collection."
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 250,
+            "default": 100,
+            "description": "Maximum items requested per page. Follow the returned pagination information for remaining results."
+          },
+          "bookmark": {
+            "type": "string",
+            "description": "Opaque Pinterest pagination bookmark returned by the previous response. Omit on the first request."
+          },
+          "query": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Additional documented query parameters for the selected fixed GET endpoint."
+          }
+        },
+        "required": [
+          "entity"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_run_targeting_report",
+      "title": "pinterest run targeting report",
+      "description": "Run live targeting analytics for an ad account, campaigns, ad groups, or ads, broken down by age, gender, location, interest, keyword, audience, placement, device, or other Pinterest targeting types. For data older than the sync window, use pinterest_run_report with targetingTypes and executionMode=async.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "AD_ACCOUNT",
+              "CAMPAIGN",
+              "AD_GROUP",
+              "AD"
+            ],
+            "default": "AD_GROUP",
+            "description": "Entity or aggregation level for the requested report."
+          },
+          "entityIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/adAccountId"
+            },
+            "maxItems": 100,
+            "description": "Exact IDs of the entities to include in the selected reporting level."
+          },
+          "startDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "First date of the reporting period, in YYYY-MM-DD format."
+          },
+          "endDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "Last date of the reporting period, in YYYY-MM-DD format, on or after startDate."
+          },
+          "targetingTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 20,
+            "description": "Native targeting categories used to break down delivery."
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 50,
+            "default": [
+              "SPEND_IN_DOLLAR",
+              "IMPRESSION_1",
+              "CLICKTHROUGH_1",
+              "OUTBOUND_CLICK_1",
+              "TOTAL_CHECKOUT",
+              "CHECKOUT_ROAS"
+            ],
+            "description": "Native Pinterest reporting column names. Discover supported columns before selecting metrics."
+          },
+          "granularity": {
+            "type": "string",
+            "enum": [
+              "TOTAL",
+              "DAY",
+              "HOUR",
+              "WEEK",
+              "MONTH"
+            ],
+            "default": "DAY",
+            "description": "Time bucket used to aggregate reporting rows."
+          },
+          "clickWindowDays": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60,
+            "default": 30,
+            "description": "Click-through attribution window, in days."
+          },
+          "engagementWindowDays": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60,
+            "default": 30,
+            "description": "Engagement-through attribution window, in days."
+          },
+          "viewWindowDays": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60,
+            "default": 1,
+            "description": "View-through attribution window, in days."
+          },
+          "conversionReportTime": {
+            "type": "string",
+            "enum": [
+              "TIME_OF_AD_ACTION",
+              "TIME_OF_CONVERSION"
+            ],
+            "default": "TIME_OF_AD_ACTION",
+            "description": "Whether conversions are assigned to the ad action date or the conversion date."
+          },
+          "attributionTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "INDIVIDUAL",
+                "HOUSEHOLD"
+              ]
+            },
+            "description": "Provider attribution categories included in the report."
+          },
+          "reportingTimezone": {
+            "type": "string",
+            "enum": [
+              "PINTEREST_TIME_ZONE",
+              "AD_ACCOUNT_TIME_ZONE"
+            ],
+            "default": "PINTEREST_TIME_ZONE",
+            "description": "Provider reporting timezone selector. Keep it consistent when comparing periods."
+          },
+          "query": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Additional documented query parameters for the selected fixed GET endpoint."
+          }
+        },
+        "required": [
+          "startDate",
+          "endDate",
+          "targetingTypes"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_targeting_options",
+      "title": "pinterest get targeting options",
+      "description": "Read Pinterest's official targeting option catalog for app type, gender, locale, age, location/geo, interest, keyword, or audience. Can also resolve a specific interest ID.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "targetingType": {
+            "type": "string",
+            "enum": [
+              "APPTYPE",
+              "GENDER",
+              "LOCALE",
+              "AGE_BUCKET",
+              "LOCATION",
+              "GEO",
+              "INTEREST",
+              "KEYWORD",
+              "AUDIENCE_INCLUDE",
+              "AUDIENCE_EXCLUDE"
+            ],
+            "default": "INTEREST",
+            "description": "Targeting dictionary to inspect, such as interests, locations or demographics."
+          },
+          "interestId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Native interest ID for the targeting lookup."
+          },
+          "query": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Additional documented query parameters for the selected fixed GET endpoint."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_keyword_intelligence",
+      "title": "pinterest get keyword intelligence",
+      "description": "Read assigned targeting keywords, Pinterest country-level keyword metrics, suggested terms, or related terms. Country metrics accept up to 2,000 keywords per request.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "ASSIGNED",
+              "COUNTRY_METRICS",
+              "SUGGESTED",
+              "RELATED"
+            ],
+            "description": "Operation or analysis mode. Only the values declared in this schema are supported."
+          },
+          "campaignId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact campaign ID in the selected advertising account."
+          },
+          "adGroupId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact ad group ID in the selected advertising account."
+          },
+          "adGroupIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/adAccountId"
+            },
+            "maxItems": 250,
+            "description": "Restrict results to these ad group IDs."
+          },
+          "matchTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "BROAD",
+                "PHRASE",
+                "EXACT",
+                "PHRASE_NEGATIVE",
+                "EXACT_NEGATIVE",
+                "TARGETING_INTERESTS"
+              ]
+            },
+            "maxItems": 5,
+            "description": "Keyword match types included in the lookup."
+          },
+          "countryCode": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "description": "Country code used to localize keyword or targeting results."
+          },
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "maxItems": 2000,
+            "description": "Keyword phrases to analyze; use the language and market of the intended audience."
+          },
+          "term": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Search term used for the keyword lookup."
+          },
+          "terms": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "maxItems": 100,
+            "description": "Search terms used for the keyword lookup."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 4,
+            "description": "Maximum number of returned items or rows. The declared bounds and default apply; use pagination for additional results."
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 250,
+            "default": 100,
+            "description": "Maximum items requested per page. Follow the returned pagination information for remaining results."
+          },
+          "bookmark": {
+            "type": "string",
+            "description": "Opaque Pinterest pagination bookmark returned by the previous response. Omit on the first request."
+          }
+        },
+        "required": [
+          "mode"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_audiences",
+      "title": "pinterest get audiences",
+      "description": "Read audience, customer-list, sharing, and Business-received audience inventory without uploading or changing audience membership.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "AUDIENCES",
+              "AUDIENCE",
+              "CUSTOMER_LISTS",
+              "CUSTOMER_LIST",
+              "CUSTOMER_SEGMENTS",
+              "SHARED_ACCOUNTS",
+              "BUSINESS_RECEIVED"
+            ],
+            "description": "Operation or analysis mode. Only the values declared in this schema are supported."
+          },
+          "audienceId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact ID of the audience to inspect or modify."
+          },
+          "customerListId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact customer-list ID. Reading metadata does not upload customer data."
+          },
+          "businessId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact business account ID used for the lookup."
+          },
+          "allowCrossBusinessRead": {
+            "type": "boolean",
+            "default": false,
+            "description": "Explicit opt-in required if the business cannot be linked to the selected ad account."
+          },
+          "accountType": {
+            "type": "string",
+            "enum": [
+              "AD_ACCOUNT",
+              "BUSINESS_ACCOUNT"
+            ],
+            "default": "AD_ACCOUNT",
+            "description": "Provider account category used to filter results."
+          },
+          "ownershipType": {
+            "type": "string",
+            "enum": [
+              "OWNED",
+              "RECEIVED"
+            ],
+            "description": "Filter audiences by provider ownership category."
+          },
+          "excludeNca": {
+            "type": "boolean",
+            "description": "Whether to exclude Pinterest new-customer-acquisition audiences from this lookup."
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 250,
+            "default": 100,
+            "description": "Maximum items requested per page. Follow the returned pagination information for remaining results."
+          },
+          "bookmark": {
+            "type": "string",
+            "description": "Opaque Pinterest pagination bookmark returned by the previous response. Omit on the first request."
+          },
+          "query": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Additional documented query parameters for the selected fixed GET endpoint."
+          }
+        },
+        "required": [
+          "mode"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_audience_insights",
+      "title": "pinterest get audience insights",
+      "description": "Read aggregated Pinterest Audience Insights for the advertiser's total or engaged audience, Pinterest's total audience, or the scope/type endpoint. Pinterest fixes the audience-insights observation window; it is not a custom date-range report.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "AUDIENCE_PROFILE",
+              "SCOPE_AND_TYPE"
+            ],
+            "default": "AUDIENCE_PROFILE",
+            "description": "Operation or analysis mode. Only the values declared in this schema are supported."
+          },
+          "audienceInsightType": {
+            "type": "string",
+            "enum": [
+              "YOUR_TOTAL_AUDIENCE",
+              "YOUR_ENGAGED_AUDIENCE",
+              "PINTEREST_TOTAL_AUDIENCE"
+            ],
+            "default": "YOUR_TOTAL_AUDIENCE",
+            "description": "Pinterest audience-insights category to request."
+          },
+          "query": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Additional documented query parameters for the selected fixed GET endpoint."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_estimate_delivery",
+      "title": "pinterest estimate delivery",
+      "description": "Run non-mutating Pinterest planning computations: ad-group audience size, bid floors, or campaign delivery estimates. The request body follows the selected Pinterest v5 schema and no campaign/ad group is created or changed.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "AUDIENCE_SIZE",
+              "BID_FLOOR",
+              "CAMPAIGN_DELIVERY",
+              "ADVANCED_AUCTION_ITEMS"
+            ],
+            "description": "Operation or analysis mode. Only the values declared in this schema are supported."
+          },
+          "request": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Exact request schema name to inspect before composing a write payload."
+          }
+        },
+        "required": [
+          "mode",
+          "request"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_conversion_setup",
+      "title": "pinterest get conversion setup",
+      "description": "Inspect Pinterest conversion measurement configuration: conversion tags, oCPM-eligible/page-visit tags, Event Quality Score, advertiser-defined events, and conversion-deletion request status. This never sends or deletes conversion events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "surfaces": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "CONVERSION_TAGS",
+                "OCPM_ELIGIBLE",
+                "PAGE_VISIT",
+                "EVENT_QUALITY_SCORE",
+                "ADVERTISER_DEFINED_EVENTS",
+                "DELETION_REQUESTS"
+              ]
+            },
+            "minItems": 1,
+            "default": [
+              "CONVERSION_TAGS",
+              "OCPM_ELIGIBLE",
+              "PAGE_VISIT",
+              "EVENT_QUALITY_SCORE",
+              "ADVERTISER_DEFINED_EVENTS"
+            ],
+            "description": "Conversion-setup surfaces to inspect, according to the supported values."
+          },
+          "includeDeletedTags": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include deleted conversion tags in diagnostics."
+          },
+          "lookbackPeriod": {
+            "type": "string",
+            "enum": [
+              "1d",
+              "14d"
+            ],
+            "default": "14d",
+            "description": "Provider lookback period used for conversion diagnostics."
+          },
+          "sourcePlatform": {
+            "type": "string",
+            "enum": [
+              "WEB",
+              "MOBILE",
+              "MOBILE_ANDROID",
+              "MOBILE_IOS",
+              "OFFLINE",
+              "PINTEREST_WEB",
+              "PINTEREST_ANDROID",
+              "PINTEREST_IOS",
+              "POINT_OF_SALE"
+            ],
+            "description": "Filter conversion data by source platform."
+          },
+          "ingestionSource": {
+            "type": "string",
+            "enum": [
+              "TAG",
+              "MMP",
+              "FILE_UPLOAD",
+              "CONVERSIONS_API",
+              "NATIVE"
+            ],
+            "description": "Filter conversion events by ingestion source."
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 250,
+            "default": 100,
+            "description": "Maximum items requested per page. Follow the returned pagination information for remaining results."
+          },
+          "bookmark": {
+            "type": "string",
+            "description": "Opaque Pinterest pagination bookmark returned by the previous response. Omit on the first request."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_catalog_diagnostics",
+      "title": "pinterest get catalog diagnostics",
+      "description": "Read deep catalog inventory and diagnostics: catalogs, feeds, feed processing results, item issues, product groups, product counts/products, available filter values, and catalog item lookups. ITEMS is a read-only POST lookup.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "CATALOGS",
+              "FEEDS",
+              "FEED",
+              "PROCESSING_RESULTS",
+              "ITEM_ISSUES",
+              "PRODUCT_GROUPS",
+              "PRODUCT_GROUP",
+              "PRODUCT_COUNTS",
+              "PRODUCTS",
+              "AVAILABLE_FILTER_VALUES",
+              "ITEMS",
+              "BATCH_STATUS"
+            ],
+            "description": "Operation or analysis mode. Only the values declared in this schema are supported."
+          },
+          "catalogId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact product catalog ID accessible to the selected account."
+          },
+          "feedId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact catalog feed ID."
+          },
+          "processingResultId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact catalog feed processing result ID to inspect."
+          },
+          "batchId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Catalog item batch ID returned by pinterest_batch_catalog_items."
+          },
+          "productGroupId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact product group ID."
+          },
+          "request": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Required for ITEMS; Pinterest CatalogsItemsRequest with country, language, and filters."
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 250,
+            "default": 100,
+            "description": "Maximum items requested per page. Follow the returned pagination information for remaining results."
+          },
+          "bookmark": {
+            "type": "string",
+            "description": "Opaque Pinterest pagination bookmark returned by the previous response. Omit on the first request."
+          },
+          "query": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Additional documented query parameters for the selected fixed GET endpoint."
+          }
+        },
+        "required": [
+          "mode"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_run_specialized_export",
+      "title": "pinterest run specialized export",
+      "description": "Start or inspect non-mutating Pinterest data jobs for Marketing Mix Modeling (MMM), bulk advertiser entity downloads, or catalog diagnostics. START creates only a report/export artifact; it never updates delivery entities.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "exportType": {
+            "type": "string",
+            "enum": [
+              "MMM",
+              "BULK_ENTITIES",
+              "CATALOG_DIAGNOSTICS"
+            ],
+            "description": "Provider export category to request."
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "START",
+              "STATUS"
+            ],
+            "default": "START",
+            "description": "Supported operation within this tool's scoped provider surface."
+          },
+          "request": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Pinterest request body required by START."
+          },
+          "token": {
+            "type": "string",
+            "description": "MMM or catalog report token required by STATUS."
+          },
+          "bulkRequestId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Bulk request ID required by BULK_ENTITIES STATUS."
+          },
+          "includeDetails": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include detailed provider records in addition to summary information."
+          }
+        },
+        "required": [
+          "exportType"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_lead_assets",
+      "title": "pinterest get lead assets",
+      "description": "Read lead-form definitions and lead subscription configuration. Lead-record export is intentionally excluded because it can contain end-user PII.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "LEAD_FORMS",
+              "LEAD_FORM",
+              "SUBSCRIPTIONS",
+              "SUBSCRIPTION"
+            ],
+            "description": "Operation or analysis mode. Only the values declared in this schema are supported."
+          },
+          "leadFormId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact lead form ID to inspect."
+          },
+          "subscriptionId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact subscription ID to inspect."
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 250,
+            "default": 100,
+            "description": "Maximum items requested per page. Follow the returned pagination information for remaining results."
+          },
+          "bookmark": {
+            "type": "string",
+            "description": "Opaque Pinterest pagination bookmark returned by the previous response. Omit on the first request."
+          },
+          "query": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Additional documented query parameters for the selected fixed GET endpoint."
+          }
+        },
+        "required": [
+          "mode"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_business_assets",
+      "title": "pinterest get business assets",
+      "description": "Read Pinterest Business Access inventory: employers/linked businesses, assets, members, partners, assigned assets, received audiences, and invites. Requires the corresponding business-management permissions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "EMPLOYERS",
+              "LINKED_BUSINESSES",
+              "ASSETS",
+              "ASSET_MEMBERS",
+              "ASSET_PARTNERS",
+              "MEMBERS",
+              "MEMBER_ASSETS",
+              "PARTNERS",
+              "PARTNER_ASSETS",
+              "RECEIVED_AUDIENCES",
+              "INVITES"
+            ],
+            "description": "Operation or analysis mode. Only the values declared in this schema are supported."
+          },
+          "adAccountId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Selected ad account used to verify the business relationship."
+          },
+          "businessId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact business account ID used for the lookup."
+          },
+          "assetId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact provider asset ID."
+          },
+          "memberId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact business member ID used for the read lookup."
+          },
+          "partnerId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact business partner ID used for the read lookup."
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 250,
+            "default": 100,
+            "description": "Maximum items requested per page. Follow the returned pagination information for remaining results."
+          },
+          "bookmark": {
+            "type": "string",
+            "description": "Opaque Pinterest pagination bookmark returned by the previous response. Omit on the first request."
+          },
+          "query": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Additional documented query parameters for the selected fixed GET endpoint."
+          },
+          "allowCrossBusinessRead": {
+            "type": "boolean",
+            "default": false,
+            "description": "Explicit opt-in required if businessId cannot be linked to the selected ad account."
+          },
+          "includePersonalIdentifiers": {
+            "type": "boolean",
+            "default": false,
+            "description": "MEMBERS, ASSET_MEMBERS and INVITES only. Explicitly include member IDs/email/username; false redacts them."
+          }
+        },
+        "required": [
+          "mode"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_billing_and_orders",
+      "title": "pinterest get billing and orders",
+      "description": "Read billing profiles/invoices, invoice download URLs, order lines, ads-credit discounts, and SSIO account/order status. Financial data is returned only when the token has account access.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "BILLING_PROFILES",
+              "BILLING_INVOICES",
+              "BILLING_INVOICE_DOWNLOAD",
+              "ORDER_LINES",
+              "ORDER_LINE",
+              "ADS_CREDIT_DISCOUNTS",
+              "SSIO_ACCOUNT",
+              "SSIO_INSERTION_ORDER_STATUS",
+              "SSIO_ORDER_LINES"
+            ],
+            "description": "Operation or analysis mode. Only the values declared in this schema are supported."
+          },
+          "entityId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Invoice ID, order-line ID, or Pinterest order ID depending on mode."
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 250,
+            "default": 100,
+            "description": "Maximum items requested per page. Follow the returned pagination information for remaining results."
+          },
+          "bookmark": {
+            "type": "string",
+            "description": "Opaque Pinterest pagination bookmark returned by the previous response. Omit on the first request."
+          },
+          "query": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Additional documented query parameters for the selected fixed GET endpoint."
+          }
+        },
+        "required": [
+          "mode"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_pin_analytics",
+      "title": "pinterest get pin analytics",
+      "description": "Read paid Pin analytics, organic multi/single-Pin analytics, user-account analytics, top Pins, or top video Pins. Pass raw metric names supported by the selected Pinterest endpoint.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Owning advertising account ID. Use the exact ID returned by account discovery; do not substitute a campaign or business ID."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "PAID_PINS",
+              "ORGANIC_PINS",
+              "ORGANIC_PIN",
+              "USER_ACCOUNT",
+              "TOP_PINS",
+              "TOP_VIDEO_PINS"
+            ],
+            "description": "Operation or analysis mode. Only the values declared in this schema are supported."
+          },
+          "pinId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact Pinterest pin ID."
+          },
+          "pinIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/properties/adAccountId"
+            },
+            "maxItems": 100,
+            "description": "Exact Pinterest pin IDs to include."
+          },
+          "campaignId": {
+            "$ref": "#/properties/adAccountId",
+            "description": "Exact campaign ID in the selected advertising account."
+          },
+          "startDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "First date of the reporting period, in YYYY-MM-DD format."
+          },
+          "endDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "Last date of the reporting period, in YYYY-MM-DD format, on or after startDate."
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 50,
+            "description": "Native or documented calculated metric names to request. Check compatibility with the selected dimensions."
+          },
+          "granularity": {
+            "type": "string",
+            "enum": [
+              "TOTAL",
+              "DAY",
+              "HOUR",
+              "WEEK",
+              "MONTH"
+            ],
+            "default": "DAY",
+            "description": "Time bucket used to aggregate reporting rows."
+          },
+          "sortBy": {
+            "type": "string",
+            "description": "Required by Pinterest top-Pin endpoints; defaults to IMPRESSION."
+          },
+          "query": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Additional documented query parameters for the selected fixed GET endpoint."
+          }
+        },
+        "required": [
+          "mode",
+          "startDate",
+          "endDate",
+          "metrics"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_organic_inventory",
+      "title": "pinterest get organic inventory",
+      "description": "Read organic Pinterest content used alongside ads: Pins, boards, Pins on a board, Pin product tags, or search results. This is inventory metadata, not proof of paid delivery.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "PINS",
+              "PIN",
+              "BOARDS",
+              "BOARD",
+              "BOARD_PINS",
+              "PRODUCT_TAGS",
+              "SEARCH_PINS"
+            ],
+            "description": "Operation or analysis mode. Only the values declared in this schema are supported."
+          },
+          "pinId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Exact Pinterest pin ID."
+          },
+          "boardId": {
+            "$ref": "#/properties/pinId",
+            "description": "Exact Pinterest board ID."
+          },
+          "searchTerm": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Text used to filter or search the selected collection."
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 250,
+            "default": 100,
+            "description": "Maximum items requested per page. Follow the returned pagination information for remaining results."
+          },
+          "bookmark": {
+            "type": "string",
+            "description": "Opaque Pinterest pagination bookmark returned by the previous response. Omit on the first request."
+          },
+          "query": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Additional documented query parameters for the selected fixed GET endpoint."
+          }
+        },
+        "required": [
+          "mode"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_trends",
+      "title": "pinterest get trends",
+      "description": "Read Pinterest Trends: top growing/monthly/yearly/seasonal keywords by supported region, growing product categories, product-category details, featured topics, or editorial articles.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "KEYWORDS",
+              "PRODUCT_CATEGORIES",
+              "PRODUCT_CATEGORY_DETAILS",
+              "FEATURED_TOPICS",
+              "EDITORIAL_ARTICLES"
+            ],
+            "description": "Operation or analysis mode. Only the values declared in this schema are supported."
+          },
+          "region": {
+            "type": "string",
+            "enum": [
+              "US",
+              "CA",
+              "DE",
+              "FR",
+              "ES",
+              "IT",
+              "DE+AT+CH",
+              "GB+IE",
+              "IT+ES+PT+GR+MT",
+              "PL+RO+HU+SK+CZ",
+              "SE+DK+FI+NO",
+              "NL+BE+LU",
+              "AR",
+              "BR",
+              "CO",
+              "MX",
+              "MX+AR+CO+CL",
+              "AU+NZ"
+            ],
+            "default": "FR",
+            "description": "Provider region selector used to localize trends."
+          },
+          "productRegion": {
+            "type": "string",
+            "enum": [
+              "US",
+              "GB+IE",
+              "CA"
+            ],
+            "default": "US",
+            "description": "Region used for product trend analysis."
+          },
+          "trendType": {
+            "type": "string",
+            "enum": [
+              "growing",
+              "monthly",
+              "yearly",
+              "seasonal"
+            ],
+            "default": "growing",
+            "description": "Provider trend category to return."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 50,
+            "description": "Maximum number of returned items or rows. The declared bounds and default apply; use pagination for additional results."
+          },
+          "interests": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Native interest categories used to filter trends."
+          },
+          "genders": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Native gender categories used to filter aggregate trends."
+          },
+          "ageBuckets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Native age groups used to filter aggregate trends."
+          },
+          "includeKeywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Include related keyword details in the trend response."
+          },
+          "includeDemographics": {
+            "type": "boolean",
+            "description": "Include available aggregate demographic breakdowns."
+          },
+          "productCategories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 20,
+            "description": "Native product category IDs or values used to filter trends."
+          },
+          "verticals": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Native business verticals used to filter trends."
+          },
+          "productLookbackDays": {
+            "type": "number",
+            "enum": [
+              90,
+              180,
+              365,
+              730
+            ],
+            "default": 365,
+            "description": "Product-trend lookback window, in days."
+          },
+          "productEngagementType": {
+            "type": "string",
+            "enum": [
+              "ENGAGEMENT",
+              "OUTBOUND_CLICK",
+              "SAVE"
+            ],
+            "default": "ENGAGEMENT",
+            "description": "Engagement signal used for product-trend analysis."
+          },
+          "featuredInterest": {
+            "type": "string",
+            "description": "Featured interest category for the trends lookup."
+          },
+          "query": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Additional documented query parameters for the selected fixed GET endpoint."
+          }
+        },
+        "required": [
+          "mode"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_get_platform_resources",
+      "title": "pinterest get platform resources",
+      "description": "Read Pinterest platform metadata and readiness resources: supported ad-account countries, delivery metric definitions, metrics readiness, lead-form questions, media upload metadata, commerce integration metadata, or the authenticated user account.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "AD_ACCOUNT_COUNTRIES",
+              "DELIVERY_METRICS",
+              "METRICS_READY_STATE",
+              "LEAD_FORM_QUESTIONS",
+              "MEDIA",
+              "MEDIA_ITEM",
+              "INTEGRATIONS",
+              "INTEGRATION",
+              "USER_ACCOUNT",
+              "WEBSITES"
+            ],
+            "description": "Operation or analysis mode. Only the values declared in this schema are supported."
+          },
+          "entityId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Media or integration ID for detail modes."
+          },
+          "reportType": {
+            "type": "string",
+            "enum": [
+              "SYNC",
+              "ASYNC"
+            ],
+            "description": "Native provider report type; determines supported metrics and dimensions."
+          },
+          "date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "Required by METRICS_READY_STATE."
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 250,
+            "default": 100,
+            "description": "Maximum items requested per page. Follow the returned pagination information for remaining results."
+          },
+          "bookmark": {
+            "type": "string",
+            "description": "Opaque Pinterest pagination bookmark returned by the previous response. Omit on the first request."
+          },
+          "query": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Additional documented query parameters for the selected fixed GET endpoint."
+          }
+        },
+        "required": [
+          "mode"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_create_campaign",
+      "title": "pinterest create campaign",
+      "description": "Create a PAUSED campaign. Monetary convenience fields use the account currency. Campaign Budget Optimization defaults to true; non-CBO eligibility is account-specific. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Campaign name."
+          },
+          "objective": {
+            "type": "string",
+            "enum": [
+              "AWARENESS",
+              "CONSIDERATION",
+              "SALES",
+              "LEADS",
+              "WEB_CONVERSION",
+              "CATALOG_SALES",
+              "VIDEO_VIEW",
+              "WEB_SESSIONS"
+            ],
+            "description": "Pinterest campaign objective, subject to account eligibility."
+          },
+          "dailyBudget": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 1000000,
+            "description": "Daily campaign budget in major account currency units; excludes lifetimeBudget."
+          },
+          "lifetimeBudget": {
+            "$ref": "#/properties/dailyBudget",
+            "description": "Lifetime campaign budget in major account currency units; excludes dailyBudget."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "name",
+          "objective"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_update_campaign_status",
+      "title": "pinterest update campaign status",
+      "description": "Update the status of an existing campaign. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "campaignId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "PAUSED",
+              "ARCHIVED"
+            ],
+            "description": "Requested entity status; ACTIVE can resume real delivery in production."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "campaignId",
+          "status"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_update_adgroup_status",
+      "title": "pinterest update adgroup status",
+      "description": "Update the status of an existing adgroup. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "adGroupId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "PAUSED",
+              "ARCHIVED"
+            ],
+            "description": "Requested entity status; ACTIVE can resume real delivery in production."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "adGroupId",
+          "status"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_update_ad_status",
+      "title": "pinterest update ad status",
+      "description": "Update the status of an existing ad. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "adId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "PAUSED",
+              "ARCHIVED"
+            ],
+            "description": "Requested entity status; ACTIVE can resume real delivery in production."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "adId",
+          "status"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_update_campaign_budget",
+      "title": "pinterest update campaign budget",
+      "description": "Set exactly one daily or lifetime campaign budget in major account currency units. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "campaignId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "dailyBudget": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 1000000,
+            "description": "Daily amount in major account currency units; excludes lifetimeBudget."
+          },
+          "lifetimeBudget": {
+            "$ref": "#/properties/dailyBudget",
+            "description": "Lifetime amount in major account currency units; excludes dailyBudget."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "campaignId"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_update_adgroup_budget",
+      "title": "pinterest update adgroup budget",
+      "description": "Set exactly one daily or lifetime ad group budget in major account currency units. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "adGroupId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "dailyBudget": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 1000000,
+            "description": "Daily amount in major account currency units; excludes lifetimeBudget."
+          },
+          "lifetimeBudget": {
+            "$ref": "#/properties/dailyBudget",
+            "description": "Lifetime amount in major account currency units; excludes dailyBudget."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "adGroupId"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_update_campaign_configuration",
+      "title": "pinterest update campaign configuration",
+      "description": "Update native campaign settings. Read the existing entity first; nested specifications may replace existing values. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "campaignId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "campaignId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_update_adgroup_configuration",
+      "title": "pinterest update adgroup configuration",
+      "description": "Update native ad group settings. Read the existing entity first; nested specifications may replace existing values. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "adGroupId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "adGroupId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_update_ad",
+      "title": "pinterest update ad",
+      "description": "Update native ad settings. Read the existing entity first; nested specifications may replace existing values. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "adId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "adId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_create_adgroup",
+      "title": "pinterest create adgroup",
+      "description": "Create a PAUSED ad group with explicit native bidding, targeting, budget and schedule. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "campaignId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "campaignId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_create_ad",
+      "title": "pinterest create ad",
+      "description": "Create a PAUSED ad from an accessible Pin. Native specification supports Pinterest creative formats subject to eligibility. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "adGroupId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "pinId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "adGroupId",
+          "pinId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_create_product_group_promotion",
+      "title": "pinterest create product group promotion",
+      "description": "Create a PAUSED shopping or collections promotion from a catalog product group. Unavailable in Sandbox. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "adGroupId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "productGroupId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "adGroupId",
+          "productGroupId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_update_product_group_promotion",
+      "title": "pinterest update product group promotion",
+      "description": "Update a catalog product group promotion. Unavailable in Sandbox. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "adGroupId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "promotionId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "adGroupId",
+          "promotionId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_create_board",
+      "title": "pinterest create board",
+      "description": "Create /boards in the selected advertiser context. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_update_board",
+      "title": "pinterest update board",
+      "description": "Update /boards in the selected advertiser context. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "boardId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "boardId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_create_pin",
+      "title": "pinterest create pin",
+      "description": "Create /pins in the selected advertiser context. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_update_pin",
+      "title": "pinterest update pin",
+      "description": "Update a Pin. Requires Pinterest restricted pin_edit entitlement in addition to pins:write; Standard alone is insufficient. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "pinId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "pinId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_register_media",
+      "title": "pinterest register media",
+      "description": "Register media upload; returned upload_url/parameters are not confirmation that a video is uploaded or ready. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_create_catalog",
+      "title": "pinterest create catalog",
+      "description": "Create /catalogs in the selected advertiser context. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_create_catalog_feed",
+      "title": "pinterest create catalog feed",
+      "description": "Create /catalogs/feeds in the selected advertiser context. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_update_catalog_feed",
+      "title": "pinterest update catalog feed",
+      "description": "Update /catalogs/feeds in the selected advertiser context. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "feedId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "feedId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_create_product_group",
+      "title": "pinterest create product group",
+      "description": "Create /catalogs/product_groups in the selected advertiser context. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_update_product_group",
+      "title": "pinterest update product group",
+      "description": "Update /catalogs/product_groups in the selected advertiser context. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "productGroupId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Numeric Pinterest entity ID in the selected advertiser context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "productGroupId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "pinterest_batch_catalog_items",
+      "title": "pinterest batch catalog items",
+      "description": "Submit native CREATE/UPDATE/UPSERT/DELETE catalog item operations. Poll the returned batch ID before reporting completion. Preview by default. No automatic mutation retry. Native API eligibility and scopes still apply.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "adAccountId": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "description": "Selected Pinterest advertiser account. All requests use this account context."
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Native Pinterest v5 request fields. Read pinterest_get_write_schema first. Monetary native fields are integer micro currency units."
+          },
+          "confirm": {
+            "type": "boolean",
+            "description": "Only true applies the displayed change. Omit for a local preview."
+          }
+        },
+        "required": [
+          "adAccountId",
+          "configuration"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Original tool result: parsed JSON when the text is JSON, otherwise the text or multiple MCP content blocks. Provider fields depend on the selected query. Existing MCP Apps fields are returned alongside result."
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ],
+  "resources": [
+    {
+      "name": "pinterest-manifest",
+      "uri": "pinterest://manifest"
+    },
+    {
+      "name": "pinterest-reporting-columns",
+      "uri": "pinterest://reporting-columns"
+    },
+    {
+      "name": "pinterest-attribution",
+      "uri": "pinterest://attribution"
+    },
+    {
+      "name": "pinterest-creative-assets",
+      "uri": "pinterest://creative-assets"
+    },
+    {
+      "name": "pinterest-catalog-reporting",
+      "uri": "pinterest://catalog-reporting"
+    },
+    {
+      "name": "pinterest-surface-map",
+      "uri": "pinterest://surface-map"
+    },
+    {
+      "name": "pinterest-recipes",
+      "uri": "pinterest://recipes"
+    }
+  ],
+  "prompts": []
+}

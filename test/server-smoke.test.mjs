@@ -39,7 +39,7 @@ test("Pinterest Ads MCP exposes core tools and resources over stdio", async () =
     const tools = await client.listTools(undefined, { timeout: 15000 });
     const toolNames = tools.tools.map((tool) => tool.name);
 
-    assert.equal(toolNames.length, 26);
+    assert.equal(toolNames.length, 28);
 
     for (const name of [
       "pinterest_health_check",

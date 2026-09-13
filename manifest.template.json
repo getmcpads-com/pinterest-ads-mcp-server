@@ -1,0 +1,108 @@
+{
+  "manifest_version": "0.3",
+  "name": "pinterest-ads-mcp-server",
+  "display_name": "Pinterest Ads by Get MCP Ads",
+  "version": "1.1.0",
+  "description": "Pinterest Ads MCP server: 28 read tools, 24 opt-in preview-first writes.",
+  "author": {
+    "name": "GetMCPAds",
+    "url": "https://www.getmcpads.com"
+  },
+  "homepage": "https://www.getmcpads.com/tools/pinterest-ads",
+  "documentation": "https://github.com/getmcpads-com/pinterest-ads-mcp-server#readme",
+  "support": "https://github.com/getmcpads-com/pinterest-ads-mcp-server/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/getmcpads-com/pinterest-ads-mcp-server"
+  },
+  "icon": "icon.png",
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "dist/cli.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/dist/cli.js"
+      ],
+      "env": {
+        "PINTEREST_ACCESS_TOKEN": "${user_config.pinterest_access_token}",
+        "PINTEREST_REFRESH_TOKEN": "${user_config.pinterest_refresh_token}",
+        "PINTEREST_APP_ID": "${user_config.pinterest_app_id}",
+        "PINTEREST_APP_SECRET": "${user_config.pinterest_app_secret}",
+        "PINTEREST_AD_ACCOUNT_ID": "${user_config.pinterest_ad_account_id}",
+        "PINTEREST_ENABLE_WRITES": "${user_config.pinterest_enable_writes}",
+        "PINTEREST_ENVIRONMENT": "${user_config.pinterest_environment}"
+      }
+    }
+  },
+  "user_config": {
+    "pinterest_access_token": {
+      "type": "string",
+      "title": "Pinterest Access Token",
+      "description": "Pinterest access token with the ads:read scope.",
+      "required": false,
+      "sensitive": true,
+      "default": ""
+    },
+    "pinterest_refresh_token": {
+      "type": "string",
+      "title": "Pinterest Refresh Token",
+      "description": "Refresh token, so the server can renew the access token.",
+      "required": false,
+      "sensitive": true,
+      "default": ""
+    },
+    "pinterest_app_id": {
+      "type": "string",
+      "title": "Pinterest App Id",
+      "description": "App ID, needed for refresh.",
+      "required": false,
+      "sensitive": false,
+      "default": ""
+    },
+    "pinterest_app_secret": {
+      "type": "string",
+      "title": "Pinterest App Secret",
+      "description": "App secret, needed for refresh.",
+      "required": false,
+      "sensitive": true,
+      "default": ""
+    },
+    "pinterest_ad_account_id": {
+      "type": "string",
+      "title": "Pinterest Ad Account Id",
+      "description": "Default ad account ID.",
+      "required": false,
+      "sensitive": false,
+      "default": ""
+    },
+    "pinterest_enable_writes": {
+      "type": "string",
+      "title": "Pinterest Enable Writes",
+      "description": "Set to 1 to expose 24 write tools. Default calls preview; confirm:true applies changes.",
+      "required": false,
+      "sensitive": false,
+      "default": "0"
+    },
+    "pinterest_environment": {
+      "type": "string",
+      "title": "Pinterest Environment",
+      "description": "API environment: production (default) or sandbox. Use credentials issued for that environment.",
+      "required": false,
+      "sensitive": false,
+      "default": "production"
+    }
+  },
+  "tools_generated": true,
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=18"
+    }
+  }
+}

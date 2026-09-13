@@ -3,6 +3,7 @@
  * Copyright 2026 GetMCPAds. https://www.getmcpads.com
  * SPDX-License-Identifier: Apache-2.0
  */
+import { redactPinterestSecrets } from "./privacy.js";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { PinterestConfig } from "../../config.js";
@@ -15,6 +16,7 @@ import type {
   PinterestAsyncReportRequest,
   PinterestCampaign,
   PinterestGranularity,
+  PinterestListResponse,
   PinterestPin,
   PinterestProductGroupPromotion,
   PinterestReportLevel,
@@ -228,6 +230,8 @@ export function registerPinterestTools(server: McpServer, config: PinterestConfi
       granularity: granularitySchema.default("DAY"),
       columns: z.array(z.string()).default(defaultReportColumns),
       executionMode: executionModeSchema.default("auto"),
+      waitForReport: z.boolean().default(true).describe("False starts or polls an async report once and returns a resumable reportToken instead of waiting. Use the same query and token on the next call."),
+      reportToken: z.string().min(1).max(2000).optional().describe("Resume a previously returned async reporting token for this ad account; never starts a second job."),
       entityIds: z.array(z.string()).optional(),
       targetingTypes: z.array(z.string()).optional(),
       filters: z.record(z.unknown()).optional(),
@@ -243,6 +247,19 @@ export function registerPinterestTools(server: McpServer, config: PinterestConfi
       try {
         const adAccountId = resolveAdAccountId(config, input.adAccountId);
         const routing = planReportExecution(input);
+        if (input.waitForReport === false || input.reportToken) {
+          if (!input.reportToken) {
+            const job = await client.createAsyncReport(adAccountId, buildAsyncBody(input));
+            return ok({ success: true, status: "pending", reportToken: job.token, retryAfterSeconds: 3 });
+          }
+          const status = await client.getAsyncReport(adAccountId, input.reportToken);
+          if (["FAILED", "CANCELLED", "EXPIRED", "DOES_NOT_EXIST"].includes(status.report_status)) {
+            return ok({ success: false, status: "error", error: "The Pinterest reporting job is no longer available. Start a fresh report.", jobStatus: status.report_status });
+          }
+          if (status.report_status !== "FINISHED" || !status.url) return ok({ success: true, status: "pending", reportToken: input.reportToken, retryAfterSeconds: 3 });
+          const rows = await client.downloadJsonReport(status.url);
+          return ok({ success: true, rows: rows.slice(0, input.limit), rowCount: rows.length, returnedRows: Math.min(rows.length, input.limit), truncated: rows.length > input.limit, executionMode: "async", warnings: routing.warnings, attribution: attributionSummary(input) });
+        }
         const rows = routing.executionMode === "async"
           ? await runAsyncReport(client, adAccountId, input)
           : await runSyncReport(client, adAccountId, input);
@@ -345,7 +362,7 @@ export function registerPinterestTools(server: McpServer, config: PinterestConfi
 
   server.tool(
     "pinterest_run_catalog_report",
-    "Run Pinterest catalog reporting by PRODUCT_GROUP or PRODUCT_ITEM. Use for Performance+ catalog, catalog product groups, product item image/brand/category/type, and Shopping-like reports.",
+    "Run Pinterest catalog reporting by PRODUCT_GROUP or PRODUCT_ITEM. PRODUCT_ITEM history is limited to 92 days before today (UTC), with requests chunked into 31-day windows; older item performance cannot be retrieved by retrying. Use PRODUCT_GROUP for older catalog delivery totals, not individual SKU performance.",
     {
       adAccountId: z.string().optional(),
       breakdown: z.enum(["PRODUCT_GROUP", "PRODUCT_ITEM"]).default("PRODUCT_GROUP"),
@@ -358,6 +375,17 @@ export function registerPinterestTools(server: McpServer, config: PinterestConfi
     },
     async (input) => {
       try {
+        validateDateRange(input.startDate, input.endDate);
+        if (input.breakdown === "PRODUCT_ITEM") {
+          const earliestDate = formatDateUtc(addDays(parseDateUtc(formatDateUtc(new Date())), -92));
+          if (input.startDate < earliestDate) {
+            throw new PinterestMcpError(
+              `PRODUCT_ITEM history is limited to 92 days before today (UTC). The earliest available startDate is ${earliestDate}; requested ${input.startDate}. Retrying or splitting the period cannot recover older item performance. Use PRODUCT_GROUP for historical group totals, or request a recent period explicitly.`,
+              400,
+              "product_item_history_unavailable"
+            );
+          }
+        }
         const adAccountId = resolveAdAccountId(config, input.adAccountId);
         const columns = input.columns?.length
           ? input.columns
@@ -393,7 +421,7 @@ export function registerPinterestTools(server: McpServer, config: PinterestConfi
           columns,
           warnings: [
             input.breakdown === "PRODUCT_ITEM"
-              ? "PRODUCT_ITEM reporting is async and chunked into 31-day windows. Aggregate repeated rows by product item fields."
+              ? "PRODUCT_ITEM history is limited to 92 days before today (UTC). Reporting is async and chunked into 31-day windows. Aggregate repeated rows by product item fields."
               : "PRODUCT_GROUP reporting is the catalog delivery surface. Use conversion product reports for brand/category/SKU conversion attribution.",
           ],
         });
@@ -449,7 +477,7 @@ export function registerPinterestTools(server: McpServer, config: PinterestConfi
 
   server.tool(
     "pinterest_run_conversion_product_report",
-    "Run Pinterest async conversion product reporting by brand, category, brand+category, SKU, or SKU group via reports/brand_category_sku.",
+    "Run Pinterest async conversion product reporting by brand, category, brand+category, SKU, or SKU group via reports/brand_category_sku. This is a restricted Pinterest feature: Standard API access alone does not guarantee availability for the client. It is separate from PRODUCT_ITEM spend reporting.",
     {
       adAccountId: z.string().optional(),
       reportName: z.string().default("Pinterest Conversion Product Report"),
@@ -457,7 +485,8 @@ export function registerPinterestTools(server: McpServer, config: PinterestConfi
       endDate: z.string(),
       granularity: z.enum(["TOTAL", "WEEK", "MONTH"]).default("TOTAL"),
       level: z.enum(["ADVERTISER", "CAMPAIGN", "AD_GROUP"]).default("CAMPAIGN"),
-      columns: z.array(z.string()).default(["TOTAL_CHECKOUT", "TOTAL_CHECKOUT_VALUE_IN_MICRO_DOLLAR", "CHECKOUT_ROAS"]),
+      columns: z.array(z.string()).default(["TOTAL_CHECKOUT_CONVERSION_PRODUCT_QUANTITY", "TOTAL_CHECKOUT_CONVERSION_PRODUCT_VALUE"])
+        .describe("ConversionProductReportingColumn names. Defaults measure product quantity and value attributed to checkout, not checkout event count. Standard ads metrics such as TOTAL_CHECKOUT, SPEND_IN_DOLLAR and CHECKOUT_ROAS are not supported by this endpoint."),
       conversionProductAttributionType: z.enum(["DEFAULT", "BRAND_ATTRIBUTION"]).default("DEFAULT"),
       conversionProductBreakdown: z.enum(["PRODUCT_BRAND", "PRODUCT_CATEGORY", "PRODUCT_BRAND_AND_CATEGORY", "PRODUCT_SKU", "PRODUCT_SKU_GROUP"]).default("PRODUCT_BRAND_AND_CATEGORY"),
       campaignIds: z.array(z.string()).optional(),
@@ -510,10 +539,163 @@ export function registerPinterestTools(server: McpServer, config: PinterestConfi
       }
     }
   );
+
+  // ── pinterest_list_ad_creatives ───────────────────────────────────
+  server.tool(
+    "pinterest_list_ad_creatives",
+    "List the ad account's ad creatives across every status (the API silently omits ARCHIVED ads unless asked) with their pin media resolved: public i.pinimg.com image URLs up to 1200px, video cover, and video_url when the app is allowed to read it. Catalog-driven formats are excluded by default.",
+    {
+      adAccountId: z.string().optional().describe("Pinterest ad account ID. Defaults to the configured account."),
+      adIds: z.array(z.string()).min(1).max(100).optional().describe("Only these ads; cannot combine with campaignIds or adGroupIds."),
+      campaignIds: z.array(z.string()).optional().describe("Only ads in these campaigns"),
+      adGroupIds: z.array(z.string()).optional().describe("Only ads in these ad groups"),
+      includeArchived: z.boolean().optional().default(true).describe("Include ARCHIVED ads (the API omits them by default)"),
+      excludeCatalogFormats: z.boolean().optional().default(true).describe("Skip catalog-driven ads whose visuals come from the product feed"),
+      maxAds: z.number().int().min(1).max(1000).optional().default(250).describe("Ads scanned before media resolution"),
+      maxPins: z.number().int().min(1).max(100).optional().default(40).describe("Unique pins resolved into media URLs. Each one costs an API call, and the Pinterest app quota is tight."),
+    },
+    async (input) => {
+      try {
+        const adAccountId = resolveAdAccountId(config, input.adAccountId as string | undefined);
+        if (input.adIds?.length && (input.campaignIds?.length || input.adGroupIds?.length)) throw new Error("Use only adIds, campaignIds or adGroupIds filters.");
+        const warnings: string[] = [];
+        const maxAds = typeof input.maxAds === "number" ? input.maxAds : 250;
+        const maxPins = typeof input.maxPins === "number" ? input.maxPins : 40;
+
+        // Vérifié sur la spec v5 : entity_statuses vaut ["ACTIVE","PAUSED"] par
+        // défaut; sans le forcer, les campagnes passées (archivées) disparaissent.
+        const ads: PinterestAd[] = [];
+        let bookmark: string | undefined;
+        do {
+          const page = await client.getResource<PinterestListResponse<PinterestAd>>(`/ad_accounts/${adAccountId}/ads`, {
+            page_size: 250,
+            ad_ids: input.adIds,
+            campaign_ids: input.campaignIds,
+            ad_group_ids: input.adGroupIds,
+            entity_statuses: input.includeArchived === false ? undefined : ["ACTIVE", "PAUSED", "ARCHIVED"],
+            bookmark,
+          });
+          ads.push(...(page.items || []));
+          bookmark = page.bookmark;
+        } while (bookmark && ads.length < maxAds);
+        const scannedAds = ads.slice(0, maxAds);
+        if (bookmark || ads.length > scannedAds.length) {
+          warnings.push(`Only the first ${scannedAds.length} ads were scanned; narrow with campaignIds/adGroupIds or raise maxAds.`);
+        }
+
+        const [campaigns, adGroups, promotions] = input.adIds?.length && input.excludeCatalogFormats === false
+          ? [[], [], []] as [PinterestCampaign[], PinterestAdGroup[], PinterestProductGroupPromotion[]]
+          : await Promise.all([
+          client.getAllCampaigns(adAccountId).catch(() => [] as PinterestCampaign[]),
+          client.getAllAdGroups(adAccountId, { campaignIds: input.campaignIds as string[] | undefined }).catch(() => [] as PinterestAdGroup[]),
+          client.getAllProductGroupPromotions(adAccountId).catch(() => [] as PinterestProductGroupPromotion[]),
+        ]);
+
+        const kept = scannedAds.filter((ad) => input.excludeCatalogFormats === false || !isCatalogAd(ad, campaigns, adGroups, promotions));
+        const skippedCatalogCount = scannedAds.length - kept.length;
+
+        const pinIds = [...new Set(kept.map((ad) => ad.pin_id).filter((id): id is string => Boolean(id)))];
+        const cappedPinIds = pinIds.slice(0, maxPins);
+        if (pinIds.length > cappedPinIds.length) {
+          warnings.push(`${pinIds.length - cappedPinIds.length} unique pins beyond the maxPins cap were left unresolved (one API call per pin against Pinterest's tight app quota).`);
+        }
+        const pinsById = new Map<string, PinterestPin>();
+        let unreadablePins = 0;
+        await Promise.all(cappedPinIds.map(async (pinId) => {
+          try {
+            pinsById.set(pinId, await client.getPin(pinId, { adAccountId, pinMetrics: false }));
+          } catch {
+            unreadablePins += 1;
+          }
+        }));
+        if (unreadablePins > 0) {
+          warnings.push(`${unreadablePins} pins could not be read (deleted, or outside this ad account's Business Access).`);
+        }
+
+        const creatives = kept.map((ad) => {
+          const adGroup = adGroups.find((item) => item.id === ad.ad_group_id);
+          const campaign = adGroup ? campaigns.find((item) => item.id === adGroup.campaign_id) : undefined;
+          const pin = ad.pin_id ? pinsById.get(ad.pin_id) : undefined;
+          const media = summarizePinMedia(pin);
+          const isCatalog = isCatalogAd(ad, campaigns, adGroups, promotions);
+          return {
+            adId: ad.id,
+            adName: ad.name,
+            status: ad.status,
+            creativeType: ad.creative_type,
+            assetType: classifyAssetType(ad, media.mediaType, isCatalog),
+            createdTime: ad.created_time,
+            campaignId: campaign?.id,
+            campaignName: campaign?.name,
+            adGroupId: ad.ad_group_id,
+            pinId: ad.pin_id,
+            pinTitle: pin?.title,
+            destinationUrl: ad.destination_url,
+            mediaType: media.mediaType,
+            thumbnailUrl: media.thumbnailUrl,
+            imageUrls: media.imageUrls,
+            videoUrl: media.videoUrl,
+            mediaResolved: Boolean(pin),
+          };
+        });
+
+        return ok({
+          creatives,
+          count: creatives.length,
+          scannedAdCount: scannedAds.length,
+          skippedCatalogCount,
+          resolvedPinCount: pinsById.size,
+          warnings,
+          limitations: [
+            "i.pinimg.com image URLs are served publicly and carry no signature or visible expiry.",
+            "video_url is a restricted Pinterest field not granted to every app: when it is absent, the video cover image and its sizes are still returned.",
+            "Catalog-driven formats take their visuals from the product feed and are excluded by default (excludeCatalogFormats: false to include them).",
+          ],
+          nextActions: creatives.some((creative) => !creative.mediaResolved)
+            ? ["Re-call with a higher maxPins, or pass campaignIds to focus media resolution on fewer ads."]
+            : [],
+        });
+      } catch (e) { return formatMcpToolError(e); }
+    },
+  );
+}
+
+/**
+ * Prédicat catalogue partagé avec pinterest_get_creative_assets (logique
+ * identique à serializeCreative) : promotion produit, formats shopping,
+ * campagne catalogue ou ad group alimenté par un feed.
+ */
+function isCatalogAd(
+  ad: PinterestAd,
+  campaigns: PinterestCampaign[],
+  adGroups: PinterestAdGroup[],
+  promotions: PinterestProductGroupPromotion[],
+): boolean {
+  const adGroup = adGroups.find((item) => item.id === ad.ad_group_id);
+  const campaign = adGroup ? campaigns.find((item) => item.id === adGroup.campaign_id) : undefined;
+  const promotion = promotions.find((item) => item.ad_group_id === ad.ad_group_id);
+  return Boolean(
+    promotion ||
+    ad.creative_type === "SHOPPING" ||
+    ad.creative_type === "SHOP_THE_PIN" ||
+    campaign?.intended_promotion_type === "CATALOG" ||
+    ["CATALOG_SALES", "SHOPPING", "SALES"].includes(String(campaign?.objective_type || "")) ||
+    hasFeedProfile(adGroup?.feed_profile_id),
+  );
+}
+
+/**
+ * Vérifié en live : Pinterest renvoie feed_profile_id "0" (chaîne) sur les ad
+ * groups classiques; un simple test de truthiness classe alors tout le compte
+ * en catalogue.
+ */
+function hasFeedProfile(feedProfileId: unknown): boolean {
+  const value = String(feedProfileId ?? "").trim();
+  return value !== "" && value !== "0";
 }
 
 function ok(data: unknown) {
-  return { content: [{ type: "text" as const, text: JSON.stringify({ source: "pinterest_ads", apiVersion: "v5", ...asObject(data) }, null, 2) }] };
+  return { content: [{ type: "text" as const, text: JSON.stringify({ source: "pinterest_ads", apiVersion: "v5", ...asObject(redactPinterestSecrets(data)) }, null, 2) }] };
 }
 
 function asObject(data: unknown): Record<string, unknown> {
@@ -821,7 +1003,7 @@ function serializeCreative(
     ad.creative_type === "SHOP_THE_PIN" ||
     campaign?.intended_promotion_type === "CATALOG" ||
     ["CATALOG_SALES", "SHOPPING", "SALES"].includes(String(campaign?.objective_type || "")) ||
-    adGroup?.feed_profile_id
+    hasFeedProfile(adGroup?.feed_profile_id)
   );
 
   return {

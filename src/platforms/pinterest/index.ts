@@ -13,12 +13,13 @@ import { logger } from "../../core/logger.js";
 
 export function registerPinterest(server: McpServer, config: PinterestConfig): void {
   registerPinterestTools(server, config);
+  registerPinterestWrites(server as never, config as never, true);
   registerPinterestSurfaceTools(server, config);
   registerPinterestResources(server, config.enableWrites ?? false);
-  logger.info("pinterest", "Registered 26 read tools and 7 resources");
+  logger.info("pinterest", "Registered 28 read tools and 7 resources");
 
   if (config.enableWrites) {
-    registerPinterestWrites(server, config);
-    logger.info("pinterest", "Registered 5 write tools (every one previews before it applies)");
+    registerPinterestWrites(server as never, config as never);
+    logger.info("pinterest", "Registered 24 write tools (every one previews before it applies)");
   }
 }

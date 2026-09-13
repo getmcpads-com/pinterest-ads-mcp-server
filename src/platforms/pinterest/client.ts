@@ -3,8 +3,10 @@
  * Copyright 2026 GetMCPAds. https://www.getmcpads.com
  * SPDX-License-Identifier: Apache-2.0
  */
+import { pinterestApiBase } from "../../config.js";
 import type { PinterestConfig } from "../../config.js";
 import { PinterestMcpError } from "../../core/errors.js";
+import { NO_REDIRECT, refuseRedirect } from "../../core/redirects.js";
 import type {
   PinterestAd,
   PinterestAdAccount,
@@ -19,7 +21,7 @@ import type {
   PinterestReportRow,
 } from "./types.js";
 
-const PINTEREST_API_BASE = "https://api.pinterest.com/v5";
+
 
 /**
  * Refuse a report URL that points at the machine running this server or at a
@@ -259,12 +261,44 @@ export class PinterestClient {
     return this.requestWithParams(`/ad_accounts/${adAccountId}/reports/brand_category_sku`, { token });
   }
 
+  private endpointForEnvironment(endpoint: string): string {
+    // Sandbox does not support Business Access delegation. Organic/catalog endpoints
+    // operate on the Sandbox token owner; advertiser endpoints retain their account path.
+    if (this.config.environment !== "sandbox" || !/^\/(pins|boards|catalogs)(\/|\?|$)/.test(endpoint)) return endpoint;
+    const url = new URL(endpoint, "https://api-sandbox.pinterest.com");
+    url.searchParams.delete("ad_account_id");
+    return url.pathname + url.search;
+  }
+
+  /** Single mutation attempt. A network failure or 5xx has an unknown outcome. */
+  async mutate(endpoint: string, method: "POST" | "PATCH" | "DELETE", body?: unknown): Promise<unknown> {
+    assertApiPath(endpoint);
+    assertNoPinterestCredentials(body);
+    const token = await this.ensureAccessToken();
+    let response: Response;
+    try {
+      response = await fetch(`${pinterestApiBase(this.config)}${this.endpointForEnvironment(endpoint)}`, {
+        method, redirect: "error", signal: AbortSignal.timeout(45000),
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+      });
+      refuseRedirect(response, "Pinterest mutation");
+    } catch {
+      throw new Error("Pinterest mutation outcome unknown. Read the account before retrying; do not create a duplicate.");
+    }
+    if (response.status === 204) return {};
+    const data = await response.json().catch(() => null) as Record<string, unknown> | null;
+    if (!data || response.status >= 500) throw new Error("Pinterest mutation outcome unknown. Read the account before retrying.");
+    if (!response.ok) throw new Error(`Pinterest HTTP ${response.status}: ${String(data.message ?? "mutation rejected").replaceAll(token, "[redacted]").slice(0,500)}`);
+    return data;
+  }
+
   private async request<T>(endpoint: string, options: RequestInit = {}, didRefresh = false, retryAttempt = 0): Promise<T> {
     const token = await this.ensureAccessToken();
     const method = String(options.method || "GET").toUpperCase();
     let response: Response;
     try {
-      response = await fetch(`${PINTEREST_API_BASE}${endpoint}`, {
+      response = await fetch(`${pinterestApiBase(this.config)}${this.endpointForEnvironment(endpoint)}`, {
         ...options,
         redirect: "error",
         headers: {
@@ -273,6 +307,7 @@ export class PinterestClient {
           ...options.headers,
         },
       });
+      refuseRedirect(response, "Pinterest API");
     } catch (error) {
       if (method === "GET" && retryAttempt < 2) {
         await delay(250 * 2 ** retryAttempt);
@@ -332,7 +367,7 @@ export class PinterestClient {
     }
 
     const credentials = Buffer.from(`${this.config.appId}:${this.config.appSecret}`).toString("base64");
-    const response = await fetch(`${PINTEREST_API_BASE}/oauth/token`, {
+    const response = await fetch(`${pinterestApiBase(this.config)}/oauth/token`, {
       method: "POST",
       redirect: "error",
       headers: {
@@ -344,6 +379,7 @@ export class PinterestClient {
         refresh_token: this.config.refreshToken,
       }),
     });
+    refuseRedirect(response, "Pinterest token refresh");
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({})) as Record<string, unknown>;
@@ -354,10 +390,12 @@ export class PinterestClient {
       );
     }
 
-    const payload = await response.json() as { access_token?: string };
+    const payload = await response.json() as { access_token?: string; refresh_token?: string; expires_in?: number };
     if (!payload.access_token) {
       throw new PinterestMcpError("Pinterest refresh response did not include an access token.");
     }
+    await this.config.onTokenRefresh?.({ accessToken: payload.access_token, refreshToken: payload.refresh_token, expiresIn: payload.expires_in });
+    if (payload.refresh_token) this.config.refreshToken = payload.refresh_token;
     this.accessToken = payload.access_token;
     return this.accessToken;
   }

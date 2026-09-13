@@ -28,8 +28,8 @@ Also listed in the [MCP Registry](https://registry.modelcontextprotocol.io) as *
 
 | | |
 |---|---|
-| **26 read tools** | Reporting, campaigns and ad groups, audiences, targeting, keywords, conversions, catalogs, business assets, billing, Pins and trends |
-| **5 write tools** | Off by default. Campaign and ad group status and budgets, campaign creation. Each one **previews before it applies** |
+| **28 read tools** | Reporting, campaigns and ad groups, audiences, targeting, keywords, conversions, catalogs, business assets, billing, Pins and trends |
+| **24 write tools** | Off by default. Campaign and ad group status and budgets, campaign creation. Each one **previews before it applies** |
 | **7 resources** | Live catalogues the model can read: reporting columns, attribution windows, creative assets, catalog reporting, surface map, recipes |
 | **Organic alongside paid** | Pin analytics and trends, not just the ad account |
 | **Privacy by construction** | Lead records are not exposed at all, and member identifiers are redacted by default |
@@ -331,3 +331,41 @@ Please read [SECURITY.md](SECURITY.md) before reporting anything security-relate
 Pinterest is a trademark of Pinterest, Inc.
 **This project is not affiliated with, endorsed by, or sponsored by Pinterest, Inc.**
 It is an independent client of a public API.
+
+## Version 1.1: platform updates and MCP contracts
+
+Every tool now declares read/write annotations, parameter descriptions and a structured output schema. Successful calls retain their original text and expose the same payload as `structuredContent.result`; provider fields depend on the selected report. Errors retain `isError: true`. The generated [server card](server-card.json) contains definitions only, with no account credentials.
+
+Writes remain disabled unless the platform-specific `ENABLE_WRITES` setting is enabled. Read the exact tool schema before calling: operations can require the owning account, currency, native configuration or a matching preview hash. Calls preview by default; applying a change requires `confirm: true`. A provider timeout can leave the outcome unknown: reconcile the account before retrying a creation or upload.
+
+Additional tools included in this release:
+
+| Tool | Purpose |
+| --- | --- |
+| `pinterest_list_ad_creatives` | List the ad account's ad creatives across every status (the API silently omits ARCHIVED ads unless asked) with their pin media resolved: public i.pinimg.com image URLs up to 1200px, video cover, and video_url when the app is allowed to read it. |
+| `pinterest_get_write_schema` | Read the official Pinterest v5 native request schema and Sandbox limitations before composing a write.. |
+| `pinterest_update_ad_status` | Update the status of an existing ad. |
+| `pinterest_update_campaign_configuration` | Update native campaign settings. |
+| `pinterest_update_adgroup_configuration` | Update native ad group settings. |
+| `pinterest_update_ad` | Update native ad settings. |
+| `pinterest_create_adgroup` | Create a PAUSED ad group with explicit native bidding, targeting, budget and schedule. |
+| `pinterest_create_ad` | Create a PAUSED ad from an accessible Pin. |
+| `pinterest_create_product_group_promotion` | Create a PAUSED shopping or collections promotion from a catalog product group. |
+| `pinterest_update_product_group_promotion` | Update a catalog product group promotion. |
+| `pinterest_create_board` | Create /boards in the selected advertiser context. |
+| `pinterest_update_board` | Update /boards in the selected advertiser context. |
+| `pinterest_create_pin` | Create /pins in the selected advertiser context. |
+| `pinterest_update_pin` | Update a Pin. |
+| `pinterest_register_media` | Register media upload; returned upload_url/parameters are not confirmation that a video is uploaded or ready. |
+| `pinterest_create_catalog` | Create /catalogs in the selected advertiser context. |
+| `pinterest_create_catalog_feed` | Create /catalogs/feeds in the selected advertiser context. |
+| `pinterest_update_catalog_feed` | Update /catalogs/feeds in the selected advertiser context. |
+| `pinterest_create_product_group` | Create /catalogs/product_groups in the selected advertiser context. |
+| `pinterest_update_product_group` | Update /catalogs/product_groups in the selected advertiser context. |
+| `pinterest_batch_catalog_items` | Submit native CREATE/UPDATE/UPSERT/DELETE catalog item operations. |
+
+The hosted GetMCPAds service additionally provides OAuth account selection and interactive review workspaces. Local servers use your own platform credentials and return native report data and media references.
+
+### Desktop bundle
+
+Run `npm run bundle -- /path/to/output` to build a `.mcpb` desktop bundle from the current catalogue. The bundle contains production dependencies, documented local configuration, and complete tool definitions. Provider credentials are entered locally during installation; write tools remain disabled unless explicitly enabled.

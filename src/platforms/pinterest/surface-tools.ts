@@ -3,6 +3,7 @@
  * Copyright 2026 GetMCPAds. https://www.getmcpads.com
  * SPDX-License-Identifier: Apache-2.0
  */
+import { redactPinterestSecrets } from "./privacy.js";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { PinterestConfig } from "../../config.js";
@@ -71,6 +72,7 @@ export function registerPinterestSurfaceTools(server: McpServer, config: Pintere
         "ORDER_LINE",
       ]),
       entityId: idSchema.optional().describe("Fetch one entity where Pinterest exposes a detail endpoint."),
+      adIds: z.array(idSchema).min(1).max(100).optional().describe("For entity AD collections only: restrict to these reporting ad IDs."),
       campaignIds: z.array(idSchema).max(100).optional(),
       adGroupIds: z.array(idSchema).max(100).optional(),
       entityStatuses: z.array(z.string()).max(20).optional(),
@@ -80,6 +82,7 @@ export function registerPinterestSurfaceTools(server: McpServer, config: Pintere
     },
     async (input) => {
       try {
+        if (input.adIds && (input.entity !== "AD" || input.entityId)) throw new Error("adIds requires an AD collection without entityId.");
         const adAccountId = resolveAdAccountId(config, input.adAccountId);
         const base = `/ad_accounts/${segment(adAccountId)}`;
         const page = pageQuery(input.pageSize, input.bookmark, input.query);
@@ -114,7 +117,7 @@ export function registerPinterestSurfaceTools(server: McpServer, config: Pintere
               ...page,
               campaign_ids: input.campaignIds,
               ad_group_ids: input.adGroupIds,
-              ad_ids: input.entityId ? [input.entityId] : undefined,
+              ad_ids: input.adIds,
               entity_statuses: input.entityStatuses,
             };
             break;
@@ -471,10 +474,11 @@ export function registerPinterestSurfaceTools(server: McpServer, config: Pintere
     "Read deep catalog inventory and diagnostics: catalogs, feeds, feed processing results, item issues, product groups, product counts/products, available filter values, and catalog item lookups. ITEMS is a read-only POST lookup.",
     {
       adAccountId: idSchema.optional(),
-      mode: z.enum(["CATALOGS", "FEEDS", "FEED", "PROCESSING_RESULTS", "ITEM_ISSUES", "PRODUCT_GROUPS", "PRODUCT_GROUP", "PRODUCT_COUNTS", "PRODUCTS", "AVAILABLE_FILTER_VALUES", "ITEMS"]),
+      mode: z.enum(["CATALOGS", "FEEDS", "FEED", "PROCESSING_RESULTS", "ITEM_ISSUES", "PRODUCT_GROUPS", "PRODUCT_GROUP", "PRODUCT_COUNTS", "PRODUCTS", "AVAILABLE_FILTER_VALUES", "ITEMS", "BATCH_STATUS"]),
       catalogId: idSchema.optional(),
       feedId: idSchema.optional(),
       processingResultId: idSchema.optional(),
+      batchId: idSchema.optional().describe("Catalog item batch ID returned by pinterest_batch_catalog_items."),
       productGroupId: idSchema.optional(),
       request: z.record(z.unknown()).optional().describe("Required for ITEMS; Pinterest CatalogsItemsRequest with country, language, and filters."),
       pageSize: pageSizeSchema,
@@ -526,10 +530,20 @@ export function registerPinterestSurfaceTools(server: McpServer, config: Pintere
             endpoint = "/catalogs/available_filter_values";
             data = await client.getResource(endpoint, { ...(input.query || {}), catalog_id: input.catalogId, feed_id: input.feedId, ad_account_id: adAccountId || undefined });
             break;
+          case "BATCH_STATUS": {
+            requireValue(input.batchId, "batchId", input.mode);
+            endpoint = `/catalogs/items/batch/${segment(input.batchId!)}`;
+            data = await client.getResource(endpoint, { ad_account_id: adAccountId || undefined });
+            const batch = asObject(data);
+            const items = Array.isArray(batch.items) ? batch.items as Record<string, unknown>[] : [];
+            return ok({ mode: input.mode, endpoint, ...batch,
+              fullySucceeded: batch.status === "COMPLETED" && items.length > 0 && items.every(item => item.status === "SUCCESS" && !(Array.isArray(item.errors) && item.errors.length)),
+            });
+          }
           case "ITEMS":
             if (!input.request) throw new PinterestMcpError("request is required for catalog ITEMS lookup.", 400, "missing_request");
             endpoint = "/catalogs/items";
-            data = await client.postReadQuery(endpoint, input.request);
+            data = await client.postReadQuery(endpoint, input.request, { ad_account_id: adAccountId || undefined });
             break;
         }
         return ok({ mode: input.mode, endpoint, ...shapeResponse(data) });
@@ -935,7 +949,7 @@ function ok(data: unknown) {
   return {
     content: [{
       type: "text" as const,
-      text: JSON.stringify({ source: "pinterest_ads", apiVersion: "v5", readOnly: true, ...asObject(data) }, null, 2),
+      text: JSON.stringify({ source: "pinterest_ads", apiVersion: "v5", readOnly: true, ...asObject(redactPinterestSecrets(data)) }, null, 2),
     }],
   };
 }
