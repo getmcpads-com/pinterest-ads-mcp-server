@@ -79,6 +79,7 @@ export function registerPinterestResources(server: McpServer, enableWrites = fal
           ? "Write tools are enabled. They can change campaign and ad group status and budgets, and create paused campaigns. Every write returns a preview and applies only when the caller repeats the call with confirm: true."
           : "Read-only. Write tools exist but are disabled unless PINTEREST_ENABLE_WRITES is set.",
         tools: [
+          "pinterest_get_write_schema",
           "pinterest_health_check",
           "pinterest_list_ad_accounts",
           "pinterest_get_delivery_metrics",
@@ -105,6 +106,7 @@ export function registerPinterestResources(server: McpServer, enableWrites = fal
           "pinterest_get_organic_inventory",
           "pinterest_get_trends",
           "pinterest_get_platform_resources",
+          "pinterest_list_ad_creatives",
         ],
         resources: [
           "pinterest://manifest",
@@ -116,7 +118,7 @@ export function registerPinterestResources(server: McpServer, enableWrites = fal
           "pinterest://recipes",
         ],
         safety: [
-          "No write or mutate endpoints are registered.",
+          enableWrites ? "Write tools require explicit confirmation after a preview." : "Write tools are disabled on this instance.",
           "OAuth access and refresh tokens are never returned in tool responses.",
           "Historical/wide reports automatically use async report creation and download.",
         ],
@@ -129,7 +131,7 @@ export function registerPinterestResources(server: McpServer, enableWrites = fal
       uri: "pinterest://reporting-columns",
       mimeType: "application/json",
       text: JSON.stringify({
-        note: "This MCP accepts Pinterest raw reporting column names, exactly as the API names them.",
+        note: "This MCP accepts Pinterest raw reporting column names. Call pinterest_get_delivery_metrics to read the column list Pinterest itself publishes.",
         entityColumns: ENTITY_COLUMNS,
         coreColumns: CORE_REPORTING_COLUMNS,
         productGroupColumns: [
@@ -189,7 +191,7 @@ export function registerPinterestResources(server: McpServer, enableWrites = fal
           "Product group promotions for catalog product group name/id, selected image/video tags and preferred media type",
         ],
         normalizedTypes: ["IMAGE", "VIDEO", "CAROUSEL", "COLLECTION", "CATALOG", "IDEA", "SHOWCASE", "QUIZ", "UNKNOWN"],
-        caveat: "Current inventory alone is not a historical delivery filter. Prefer period performance rows when available.",
+        caveat: "Current inventory alone is not a historical delivery filter. Prefer period performance rows when available. For a pure media library without a performance report, use pinterest_list_ad_creatives (includes ARCHIVED ads by default).",
       }, null, 2),
     }],
   }));
@@ -200,8 +202,8 @@ export function registerPinterestResources(server: McpServer, enableWrites = fal
       mimeType: "application/json",
       text: JSON.stringify({
         productGroup: "Use PRODUCT_GROUP async reports for catalog spend, impressions, clicks, conversions and product group metadata.",
-        productItem: "Use PRODUCT_ITEM async reports for item name, image URL, brand, product type/category, price, product URL, pin URL and performance.",
-        conversionProductReport: "Use reports/brand_category_sku for conversion product reporting by brand/category/SKU. This is separate from spend by product item.",
+        productItem: "Use PRODUCT_ITEM async reports for item metadata and performance. History is limited to 92 days before the current UTC date; each request covers at most 31 days. Splitting or retrying cannot recover older item performance.",
+        conversionProductReport: "Use reports/brand_category_sku for conversion product reporting by brand/category/SKU. This restricted Pinterest feature requires availability for the client beyond Standard API access. It is separate from spend by product item.",
       }, null, 2),
     }],
   }));
@@ -215,7 +217,7 @@ export function registerPinterestResources(server: McpServer, enableWrites = fal
         surfaces: {
           deliveryAnalytics: ["pinterest_run_report", "pinterest_run_targeting_report", "pinterest_run_catalog_report", "pinterest_run_conversion_product_report"],
           accountInventory: ["pinterest_list_ad_accounts", "pinterest_get_account_entities"],
-          creativesAndOrganic: ["pinterest_get_creative_assets", "pinterest_get_pin_analytics", "pinterest_get_organic_inventory"],
+          creativesAndOrganic: ["pinterest_get_creative_assets", "pinterest_list_ad_creatives", "pinterest_get_pin_analytics", "pinterest_get_organic_inventory"],
           targetingAndPlanning: ["pinterest_get_targeting_options", "pinterest_get_keyword_intelligence", "pinterest_get_audiences", "pinterest_get_audience_insights", "pinterest_estimate_delivery"],
           measurement: ["pinterest_get_conversion_setup", "pinterest_get_delivery_metrics", "pinterest_get_platform_resources"],
           commerce: ["pinterest_get_catalog_inventory", "pinterest_get_catalog_diagnostics", "pinterest_run_specialized_export"],
@@ -301,7 +303,7 @@ export function registerPinterestResources(server: McpServer, enableWrites = fal
               exportType: "MMM",
               action: "START",
               request: {
-                report_name: "Conversion report",
+                report_name: "Weekly spend by campaign",
                 start_date: "2025-01-01",
                 end_date: "2025-12-31",
                 granularity: "WEEK",

@@ -55,3 +55,13 @@ export function redactPinterestBusinessPersonalIdentifiers(value: unknown, mode:
 }
 
 export const PINTEREST_REDACTION_MARKER = REDACTED;
+
+/** Feed responses may include stored credentials; never expose them through MCP. */
+export function redactPinterestSecrets(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(redactPinterestSecrets);
+  if (!isRecord(value)) return value;
+  return Object.fromEntries(Object.entries(value).map(([key, nested]) => [key,
+    /^(credentials|password|access_token|refresh_token|client_secret|app_secret|authorization)$/i.test(key)
+      ? REDACTED : redactPinterestSecrets(nested),
+  ]));
+}
