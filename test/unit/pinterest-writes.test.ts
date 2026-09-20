@@ -117,7 +117,10 @@ describe("Pinterest writes", () => {
       "https://api-sandbox.pinterest.com/v5/ad_accounts/123/ad_groups/300",
       "https://api-sandbox.pinterest.com/v5/pins/400",
       "https://api-sandbox.pinterest.com/v5/ad_accounts/123/ads",
+      "https://api-sandbox.pinterest.com/v5/ad_accounts/123/ads/500",
     ]);
+    expect(r.verification.confirmed).toBe(false);
+    expect(f.mock.calls.filter(c => c[1]?.method === "POST")).toHaveLength(1);
     expect(f.mock.calls.at(-1)?.[1]?.redirect).toBe("error");
   });
   it("reports HTTP 200 per-item failures instead of falsely claiming success", () => {

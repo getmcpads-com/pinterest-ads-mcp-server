@@ -1,8 +1,9 @@
-/** Copyright 2026 GetMCPAds. SPDX-License-Identifier: Apache-2.0 */
-import { redactPinterestSecrets } from "./privacy";
+/** Copyright 2026 getmcpads. SPDX-License-Identifier: Apache-2.0 */
+import { redactPinterestSecrets } from "./privacy.js";
 import { z } from "zod";
+import { pinterestEffectiveGroup, validatePinterestSettings, validatePinterestGroupBudget, validatePinterestPerformanceSettings } from "./settings.js";
 import type { ToolShape } from "../../tool-quality.js";
-import { PinterestClient } from "./client";
+import { PinterestClient } from "./client.js";
 import type { PinterestConfig } from "../../config.js";
 import { toMicroCurrency } from "../../core/money.js";
 import * as validators from "./generated/pinterest/validators.js";
@@ -52,6 +53,7 @@ export const PINTEREST_EXTENDED_WRITES = new Set([
   "pinterest_create_adgroup",
   "pinterest_update_adgroup_configuration",
   "pinterest_create_ad",
+  "pinterest_create_collection_ad",
   "pinterest_update_ad",
   "pinterest_update_ad_status",
   "pinterest_create_product_group_promotion",
@@ -109,16 +111,22 @@ function budget(a: Row): { amount: number; type: "DAILY" | "LIFETIME" } {
 /** Preserve Pinterest's per-item failures, including failures returned with HTTP 200. */
 export function pinterestMutationResult(result: Row, async = false) {
   const rows = Array.isArray(result.items) ? result.items : [];
+  // Ads return a single Exception object; other batch endpoints return arrays.
+  const hasFailure = (value: unknown) => Array.isArray(value)
+    ? value.length > 0
+    : value != null && typeof value === "object"
+      ? Object.keys(value).length > 0
+      : Boolean(value);
   const failed = rows.filter(
     (r: Row) =>
-      r.errors?.length ||
-      r.exceptions?.length ||
+      hasFailure(r.errors) ||
+      hasFailure(r.exceptions) ||
       r.error ||
       r.status === "FAILURE",
   );
   const errors = Boolean(
-    result.errors?.length ||
-      result.exceptions?.length ||
+    hasFailure(result.errors) ||
+      hasFailure(result.exceptions) ||
       result.error ||
       ["FAILED", "FAILURE"].includes(result.status) ||
       failed.length,
@@ -178,6 +186,7 @@ export function registerPinterestWrites(
           },
           notes: [
             "Sandbox uses separate tokens and entities.",
+            "Ad-only Pin creation accepts is_removable:true (documented in the official creation guide); board_id is then optional. The pinned OpenAPI omits this field.",
             "Sandbox cannot create video Pins or shopping ads.",
             "Standard access alone does not grant restricted video_url access.",
             "Native monetary fields are micro units of the selected account currency.",
@@ -223,6 +232,8 @@ export function registerPinterestWrites(
           if (p.schema === "CampaignUpdateRequest")
             p.payload.ad_account_id = a.adAccountId;
           validate(p.schema, p.payload);
+          const kind = p.schema.startsWith("Campaign") ? "campaign" : p.schema.startsWith("AdGroup") ? "adgroup" : p.schema.startsWith("AdCreate") || p.schema.startsWith("AdUpdate") ? "ad" : undefined;
+          if (kind) validatePinterestSettings(kind, p.payload, p.method === "POST");
           if (
             p.payload.ad_account_id !== undefined &&
             p.payload.ad_account_id !== a.adAccountId
@@ -272,6 +283,16 @@ export function registerPinterestWrites(
               );
           }
           await p.scope?.();
+          if (kind && p.method === "PATCH") {
+            const current = await api.getResource(p.path + "/" + p.payload.id, {}) as Row;
+            const merged = { ...current, ...p.payload };
+            validatePinterestSettings(kind, merged, true);
+            if (kind === "adgroup" && current.campaign_id) {
+              const parent = await api.getResource(adPath(a, "campaigns") + "/" + current.campaign_id, {}) as Row;
+              validatePinterestGroupBudget(merged, parent, false);
+              validatePinterestPerformanceSettings('adgroup', p.payload, parent, false);
+            }
+          }
           const result = (await api.mutate(
             p.path,
             p.method,
@@ -288,21 +309,51 @@ export function registerPinterestWrites(
                   )
                 : Boolean(result.id || result.media_id);
             if (!expected)
-              throw new Error(
-                "Pinterest mutation outcome unknown: success response has no expected entity or batch ID. Read the account before retrying.",
-              );
+              return out({ action: name, applied: false, outcome: "unknown", retrySafe: false,
+                error: "Pinterest mutation outcome unknown: success response has no expected entity or batch ID. Read the account before retrying.",
+                result,
+              }, true);
+          }
+          let verification: Row | undefined;
+          if ((kind || name === "pinterest_create_collection_ad") && outcome.applied) {
+            const entityId = result.items?.[0]?.data?.id;
+            try {
+              if (!entityId) throw new Error("Missing acknowledged ID");
+              let actual = await api.getResource(p.path + "/" + entityId, {}) as Row;
+              if (kind === "adgroup" && (actual.budget_type === "CBO_ADGROUP" || (a as Row).performancePlusUnderPausedCampaign === true) && actual.campaign_id) {
+                const parent = await api.getResource(adPath(a, "campaigns") + "/" + actual.campaign_id, {}) as Row;
+                if ((a as Row).performancePlusUnderPausedCampaign === true && (parent.is_performance_plus !== true || parent.status !== 'PAUSED')) throw new Error('Performance+ parent campaign is no longer paused.');
+                actual = pinterestEffectiveGroup(actual, parent);
+              }
+              const compare = (expected: any, found: any, path = ""): string[] => {
+                if (expected === found || typeof expected === "number" && typeof found === "string" && found.trim() !== "" && expected === Number(found)) return [];
+                if (!expected || typeof expected !== "object") return [path];
+                if (!found || typeof found !== "object" || Array.isArray(expected) !== Array.isArray(found) || Array.isArray(expected) && expected.length !== found.length) return [path];
+                return Object.entries(expected).flatMap(([key, value]) => compare(value, found[key], path + "/" + key));
+              };
+              const expected: Row = { ...(name === "pinterest_create_collection_ad" ? p.payload.product_group_promotion[0] : p.payload), id: String(entityId) };
+              // Advertiser ownership is enforced by the account-scoped endpoint.
+              delete expected.ad_account_id;
+              const differences = compare(expected, actual);
+              verification = { confirmed: differences.length === 0, method: "exact_account_scoped_readback", id: String(entityId), differences };
+            } catch {
+              verification = { confirmed: false, id: entityId, reason: "Readback unavailable. Keep this receipt and reconcile; do not recreate." };
+            }
           }
           return out(
             {
               action: name,
               environment: config.environment ?? "production",
               ...outcome,
+              ...(verification ? { verification } : {}),
             },
             ["partial", "rejected"].includes(outcome.outcome),
           );
         } catch (e) {
           const message = (e as Error).message;
-          const restricted =
+          const trial = /Apps with Trial access may not create Pins/.test(message);
+          const missingScopes = /Missing\s*\[[^\]]*['"][a-z_]+:(?:read|write)(?:_secret)?['"]/i.test(message);
+          const restricted = trial ||
             /restricted feature|not available to all merchants|reviewing your account/.test(
               message,
             );
@@ -314,11 +365,14 @@ export function registerPinterestWrites(
                 ? "unknown"
                 : "not_applied",
               retrySafe: false,
-              ...(restricted
+              ...(restricted || missingScopes
                 ? {
                     humanActionRequired: true,
-                    nextAction:
-                      "Pinterest must enable this feature or complete merchant review. Standard API access and OAuth scopes alone do not grant this entitlement; do not retry blindly.",
+                    nextAction: missingScopes
+                      ? "Authorize the connected Pinterest application through OAuth with the missing write scopes. A read-only quickstart token cannot create Pins or ads, even for a Standard application. Keep completed objects and retry only the rejected steps after authorization."
+                      : trial
+                      ? "Pinterest must approve Standard access for the connected OAuth application before production Pins can be created. Reconnecting the same Trial app does not change its access tier. Do not retry blindly."
+                      : "Pinterest must enable this feature or complete merchant review. Standard API access and OAuth scopes alone do not grant this entitlement; do not retry blindly.",
                   }
                 : {}),
             },
@@ -452,8 +506,8 @@ export function registerPinterestWrites(
         const fields =
           entity === "campaigns"
             ? {
-                [b.type === "DAILY" ? "daily_spend_cap" : "lifetime_spend_cap"]:
-                  b.amount,
+                [b.type === "DAILY" ? "daily_spend_cap" : "lifetime_spend_cap"]: b.amount,
+                [b.type === "DAILY" ? "lifetime_spend_cap" : "daily_spend_cap"]: 0,
               }
             : { budget_in_micro_currency: b.amount, budget_type: b.type };
         return {
@@ -517,29 +571,29 @@ export function registerPinterestWrites(
   }
   register(
     "pinterest_create_adgroup",
-    "Create a PAUSED ad group with explicit native bidding, targeting, budget and schedule.",
-    { campaignId: id, configuration: native },
-    (a) => ({
-      path: adPath(a, "ad_groups"),
-      method: "POST",
-      schema: "AdGroupCreateRequest",
-      batch: true,
-      payload: {
-        ...a.configuration,
-        campaign_id: a.campaignId,
-        status: "PAUSED",
-      },
-      scope: async () => {
-        const parent = (await owned(a, "campaigns", a.campaignId)) as Row;
-        if (
-          parent.is_campaign_budget_optimization &&
-          a.configuration.budget_in_micro_currency !== undefined
-        )
-          throw new Error(
-            "Campaign Budget Optimization owns the budget; omit the ad group budget.",
-          );
-      },
-    }),
+    "Create a PAUSED ad group with explicit native bidding, targeting, budget and schedule. Performance+ requires explicit performancePlusUnderPausedCampaign consent: its group is ACTIVE while the parent campaign must remain PAUSED.",
+    { campaignId: id, configuration: native, performancePlusUnderPausedCampaign: z.boolean().optional().describe('Explicitly approve an ACTIVE Performance+ group under a PAUSED campaign. Pinterest rejects PAUSED Performance+ groups (4073). Never enables the campaign or ads; omitted by default.') },
+    (a) => {
+      if (a.performancePlusUnderPausedCampaign === true && a.configuration.status !== undefined) throw new Error('Omit configuration.status when approving the Performance+ exception: the group will be ACTIVE under a PAUSED campaign.');
+      return {
+        path: adPath(a, "ad_groups"),
+        method: "POST",
+        schema: "AdGroupCreateRequest",
+        batch: true,
+        payload: {
+          ...a.configuration,
+          campaign_id: a.campaignId,
+          status: a.performancePlusUnderPausedCampaign === true ? "ACTIVE" : "PAUSED",
+        },
+        scope: async () => {
+          const parent = (await owned(a, "campaigns", a.campaignId)) as Row;
+          validatePinterestGroupBudget(a.configuration, parent, true);
+          if (a.performancePlusUnderPausedCampaign === true) {
+            if (parent.is_performance_plus !== true || parent.status !== 'PAUSED') throw new Error('The approved Performance+ exception requires an existing PAUSED Performance+ campaign. No group was created.');
+          } else if (parent.is_performance_plus === true) throw new Error('Pinterest rejects PAUSED Performance+ groups (4073). Explicit approval of performancePlusUnderPausedCampaign is required; the campaign and ads remain PAUSED.');
+        },
+      };
+    },
   );
   register(
     "pinterest_create_ad",
@@ -557,7 +611,8 @@ export function registerPinterestWrites(
         status: "PAUSED",
       },
       scope: async () => {
-        await owned(a, "ad_groups", a.adGroupId);
+        const group = await owned(a, "ad_groups", a.adGroupId) as Row;
+        if (group.campaign_id) validatePinterestPerformanceSettings('ad', a.configuration, await owned(a, "campaigns", group.campaign_id) as Row);
         await api.getResource(`/pins/${a.pinId}`, {
           ad_account_id: a.adAccountId,
         });
@@ -620,6 +675,36 @@ export function registerPinterestWrites(
       },
     );
   }
+  register(
+    "pinterest_create_collection_ad",
+    "Create a PAUSED collection with an explicitly selected image/video hero Pin and an accessible catalog product group. Does not create catalog-only/DPA ads. Standard account eligibility is required; unavailable in Sandbox.",
+    { adGroupId: id, productGroupId: id, heroPinId: id, configuration: native },
+    (a) => {
+      if (config.environment === "sandbox") throw new Error("Collections are not supported in Pinterest Sandbox.");
+      if (a.configuration.name !== undefined) throw new Error("Pinterest collection promotions use the catalog product-group name; a custom name field is not supported.");
+      const promotion = {
+        ...a.configuration,
+        ad_group_id: a.adGroupId,
+        catalog_product_group_id: a.productGroupId,
+        collections_hero_pin_id: a.heroPinId,
+        creative_type: "COLLECTION",
+        status: "PAUSED",
+      };
+      return {
+        path: adPath(a, "product_group_promotions"), method: "POST", schema: "ProductGroupPromotionsCreate",
+        payload: { ad_group_id: a.adGroupId, product_group_promotion: [promotion] },
+        scope: async () => {
+          const group = await owned(a, "ad_groups", a.adGroupId) as Row;
+          if (group.campaign_id) validatePinterestPerformanceSettings('collection', a.configuration, await owned(a, "campaigns", group.campaign_id) as Row);
+          await api.getResource("/catalogs/product_groups/" + a.productGroupId, { ad_account_id: a.adAccountId });
+          // Pin GET does not expose is_removable in the official schema. The
+          // Collection creation requires it for the hero; do not infer its absence
+          // from an omitted read field. This read proves access to the exact Pin.
+          await api.getResource("/pins/" + a.heroPinId, { ad_account_id: a.adAccountId });
+        },
+      };
+    },
+  );
   for (const [tool, path, request, method, param] of [
     ["pinterest_create_board", "/boards", "BoardCreate", "POST", null],
     [
@@ -695,9 +780,9 @@ export function registerPinterestWrites(
           throw new Error("Choose board privacy explicitly. PUBLIC uses boards:write; SECRET additionally requires boards:write_secret, which the standard advertising OAuth flow does not request.");
         if (
           tool === "pinterest_create_pin" &&
-          (!payload.board_id || !payload.media_source)
+          ((!payload.board_id && payload.is_removable !== true) || !payload.media_source)
         )
-          throw new Error("Creating a Pin requires board_id and media_source.");
+          throw new Error("Creating a Pin requires media_source and either board_id or is_removable:true for an ad-only Pin.");
         return {
           path:
             path === "/media"
@@ -708,6 +793,10 @@ export function registerPinterestWrites(
           payload,
           async: tool === "pinterest_batch_catalog_items",
           scope: async () => {
+            if (tool === "pinterest_create_pin" && payload.media_source?.source_type === "video_id") {
+              const media = await api.getResource("/media/" + id.parse(payload.media_source.media_id), {}) as Row;
+              if (media.status !== "succeeded") throw new Error("Pinterest video is not ready. Read processing status before creating its Pin.");
+            }
             if (param)
               await api.getResource(path + "/" + a[param], {
                 ad_account_id: a.adAccountId,

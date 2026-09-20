@@ -1,4 +1,13 @@
 # Changelog
+## 2.0.0 - 2026-09-20
+
+- Update native campaign/ad-group validation, budget ownership and exact readback checks.
+- Add the native collection-ad tool and preserve private report URL and redirect guards.
+- Exclude hosted frozen-file video upload workflows.
+- Require Node.js 22.12 or newer and check Node 22/24 in CI.
+- Update vulnerable dependencies and regenerate the MCP catalog.
+- No hosted creative UI or MCP Apps integrations.
+
 
 ## 1.1.0
 
