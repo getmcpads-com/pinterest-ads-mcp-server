@@ -1,11 +1,11 @@
 {
   "manifest_version": "0.3",
   "name": "pinterest-ads-mcp-server",
-  "display_name": "Pinterest Ads by Get MCP Ads",
-  "version": "1.1.0",
-  "description": "Pinterest Ads MCP server: 28 read tools, 24 opt-in preview-first writes.",
+  "display_name": "Pinterest Ads by getmcpads",
+  "version": "2.0.0",
+  "description": "Pinterest Ads MCP server: 28 read tools, 25 opt-in preview-first writes.",
   "author": {
-    "name": "GetMCPAds",
+    "name": "getmcpads",
     "url": "https://www.getmcpads.com"
   },
   "homepage": "https://www.getmcpads.com/tools/pinterest-ads",
@@ -80,7 +80,7 @@
     "pinterest_enable_writes": {
       "type": "string",
       "title": "Pinterest Enable Writes",
-      "description": "Set to 1 to expose 24 write tools. Default calls preview; confirm:true applies changes.",
+      "description": "Set to 1 to expose 25 write tools. Default calls preview; confirm:true applies changes.",
       "required": false,
       "sensitive": false,
       "default": "0"
@@ -102,7 +102,7 @@
       "linux"
     ],
     "runtimes": {
-      "node": ">=18"
+      "node": ">=22.12"
     }
   }
 }

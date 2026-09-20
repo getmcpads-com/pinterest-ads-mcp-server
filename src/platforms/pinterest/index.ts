@@ -20,6 +20,6 @@ export function registerPinterest(server: McpServer, config: PinterestConfig): v
 
   if (config.enableWrites) {
     registerPinterestWrites(server as never, config as never);
-    logger.info("pinterest", "Registered 24 write tools (every one previews before it applies)");
+    logger.info("pinterest", "Registered 25 write tools (every one previews before it applies)");
   }
 }

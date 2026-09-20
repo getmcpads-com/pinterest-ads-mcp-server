@@ -1,8 +1,10 @@
 # pinterest-ads-mcp-server
 
+
+
 [![CI](https://github.com/getmcpads-com/pinterest-ads-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/getmcpads-com/pinterest-ads-mcp-server/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![Node](https://img.shields.io/badge/node-%E2%89%A518-brightgreen.svg)](package.json)
+[![Node](https://img.shields.io/badge/node-%E2%89%A522.12-brightgreen.svg)](package.json)
 
 An open-source [Model Context Protocol](https://modelcontextprotocol.io) server for the
 **Pinterest Ads API**. It lets Claude, ChatGPT, Cursor or any MCP client read and analyse
@@ -24,12 +26,30 @@ Also listed in the [MCP Registry](https://registry.modelcontextprotocol.io) as *
 
 ---
 
+
+## Current source release
+
+Version 2.0.0 requires **Node.js 22.12 or newer**. CI checks Node 22 and 24.
+This source catalog contains **28 read tools** and **25 write tools**.
+Native API tools are included. Hosted creative galleries, visual editors, Launcher storage and MCP Apps UI are excluded.
+This is a major source update because Node 18 and 20 are no longer supported.
+Source commits, npm releases and MCP Registry publication are separate steps. Until this version is published, use the source installation below to run this exact revision.
+
+```bash
+git clone https://github.com/getmcpads-com/pinterest-ads-mcp-server.git
+cd pinterest-ads-mcp-server
+npm ci
+npm run build
+```
+
+Configure your MCP client to run `node` with the absolute path to `dist/cli.js` and the environment variables documented below.
+
 ## What you get
 
 | | |
 |---|---|
 | **28 read tools** | Reporting, campaigns and ad groups, audiences, targeting, keywords, conversions, catalogs, business assets, billing, Pins and trends |
-| **24 write tools** | Off by default. Campaign and ad group status and budgets, campaign creation. Each one **previews before it applies** |
+| **25 write tools** | Off by default. Campaign and ad group status and budgets, campaign creation. Each one **previews before it applies** |
 | **7 resources** | Live catalogues the model can read: reporting columns, attribution windows, creative assets, catalog reporting, surface map, recipes |
 | **Organic alongside paid** | Pin analytics and trends, not just the ad account |
 | **Privacy by construction** | Lead records are not exposed at all, and member identifiers are redacted by default |
@@ -43,29 +63,6 @@ something else.
 
 `pinterest://reporting-columns` lists what is available, and `pinterest_validate_report`
 checks a request before it runs.
-
----
-
-## How this compares to Pinterest's own MCP server
-
-Pinterest shipped an official MCP server in June 2026, with authentication handled by
-Pinterest's own systems. **It launched read-only**: an agent can pull performance data and
-account context, but cannot change a budget, pause a campaign or edit a bid.
-
-| | **This server** | Pinterest's official server | [getmcpads.com](https://www.getmcpads.com) |
-|---|---|---|---|
-| Hosting | **You host it.** stdio, local process | Pinterest-hosted | Hosted for you |
-| Data path | **Direct to the API.** No intermediary | Through Pinterest's endpoint | Through our gateway |
-| Writes | **Yes, preview first**, applied only on `confirm: true` | None, read-only at launch | Yes, preview first |
-| Auditable | **Yes.** Apache-2.0, read every line | No | This server, audited |
-| Modifiable | **Fork it** | No | No |
-| Auth | You bring a token, which is more setup | Handled by Pinterest | Hosted OAuth |
-
-**Choose Pinterest's** for the least setup, if reporting is all you need.
-**Choose this one** if you want your data to stay on your infrastructure, want to audit or
-extend what the model can do, or want guarded writes rather than none.
-**Choose [getmcpads.com](https://www.getmcpads.com)** if you want this server's capabilities
-without running it, or you need more than one ad platform in the same conversation.
 
 ---
 
@@ -369,3 +366,9 @@ The hosted GetMCPAds service additionally provides OAuth account selection and i
 ### Desktop bundle
 
 Run `npm run bundle -- /path/to/output` to build a `.mcpb` desktop bundle from the current catalogue. The bundle contains production dependencies, documented local configuration, and complete tool definitions. Provider credentials are entered locally during installation; write tools remain disabled unless explicitly enabled.
+
+## Additional native tools
+
+| Tool | Purpose |
+|---|---|
+| `pinterest_create_collection_ad` | Create a PAUSED collection with an explicitly selected image/video hero Pin and an accessible catalog product group. |
