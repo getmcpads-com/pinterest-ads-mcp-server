@@ -1,48 +1,60 @@
-# pinterest-ads-mcp-server
+<div align="center">
 
+# Pinterest Ads MCP server
 
+### Connect the dots in your Pinterest campaigns.
 
+Explore reporting, audiences, catalogs and native campaign operations from your MCP client.
+
+[![Release](https://img.shields.io/github/v/release/getmcpads-com/pinterest-ads-mcp-server?color=2448e5)](https://github.com/getmcpads-com/pinterest-ads-mcp-server/releases/latest)
 [![CI](https://github.com/getmcpads-com/pinterest-ads-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/getmcpads-com/pinterest-ads-mcp-server/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%E2%89%A522.12-brightgreen.svg)](package.json)
 
-An open-source [Model Context Protocol](https://modelcontextprotocol.io) server for the
-**Pinterest Ads API**. It lets Claude, ChatGPT, Cursor or any MCP client read and analyse
-your Pinterest advertising data, and change it if you choose to.
+[Watch the demo](https://www.getmcpads.com/home/film/get-mcp-ads-film-1080p.mp4) · [What's new](#whats-new) · [Install](#install-this-release) · [Tool reference](#tools) · [Try hosted getmcpads](https://www.getmcpads.com/tools/pinterest-ads?utm_source=github&utm_medium=readme&utm_campaign=pinterest-ads)
 
-You run it. Your token stays on your machine. Nothing is proxied through a third party.
+[![Watch the getmcpads product demo: campaign review in Claude](https://www.getmcpads.com/home/film/poster-rich.webp)](https://www.getmcpads.com/home/film/get-mcp-ads-film-1080p.mp4)
+
+**[Play the 27-second product film](https://www.getmcpads.com/home/film/get-mcp-ads-film-1080p.mp4)**
+
+</div>
+
+The film demonstrates hosted getmcpads with staged data. Its creative galleries and MCP Apps interface belong to the hosted product. This repository provides the standalone native API tools.
+
+**28 read tools** · **25 write tools**, disabled by default.
+
+Run locally with your own platform credentials and a client that supports stdio MCP, such as Claude Desktop, Claude Code or Cursor. Your requests go directly to the platform. For managed connections, including supported ChatGPT setups, use the hosted option.
+
+## What's new
+
+**[v2.0.0: Native tools and security update](https://github.com/getmcpads-com/pinterest-ads-mcp-server/releases/tag/v2.0.0) · September 20, 2026**
+
+- Update native campaign/ad-group validation, budget ownership and exact readback checks.
+- Add the native collection-ad tool and preserve private report URL and redirect guards.
+- Exclude hosted frozen-file video upload workflows.
+- Require Node.js 22.12 or newer and check Node 22/24 in CI.
+- Update vulnerable dependencies and regenerate the MCP catalog.
+
+[Full changelog](CHANGELOG.md) · [Source synchronization details](SOURCE_SYNC.md) · [All releases](https://github.com/getmcpads-com/pinterest-ads-mcp-server/releases)
+
+### Upgrade notes
+
+Requires **Node.js 22.12 or newer**. CI covers Node 22 and 24. Version 2.0.0 drops Node 18 and 20 support. Read the current tool schemas before reusing saved arguments. Writes remain optional and require explicit confirmation. Hosted creative integrations and MCP Apps UI are outside this release.
+
+## Install this release
+
+This is a GitHub source release. npm and MCP Registry versions are published separately. The commands below select this exact version; unpinned `npx` examples later in this document select the version currently available on npm.
 
 ```bash
-npx -y @getmcpads/pinterest-ads-mcp-server
-```
-
-Also listed in the [MCP Registry](https://registry.modelcontextprotocol.io) as **`com.getmcpads/pinterest-ads`**, so clients that read the registry can install it by name.
-
-> **Prefer a hosted connection?** [Get MCP Ads for Pinterest Ads](https://www.getmcpads.com/tools/pinterest-ads?utm_source=github&utm_medium=readme&utm_campaign=pinterest_ads_hosted)
-> handles the server and OAuth flow. Create a workspace, connect the platform and
-> select the accounts or properties your assistant may read. Free is read only;
-> paid limits and supported writes are described on the site. Hosted and npm
-> releases can differ: check the current catalogue for the operation you need.
-
----
-
-
-## Current source release
-
-Version 2.0.0 requires **Node.js 22.12 or newer**. CI checks Node 22 and 24.
-This source catalog contains **28 read tools** and **25 write tools**.
-Native API tools are included. Hosted creative galleries, visual editors, Launcher storage and MCP Apps UI are excluded.
-This is a major source update because Node 18 and 20 are no longer supported.
-Source commits, npm releases and MCP Registry publication are separate steps. Until this version is published, use the source installation below to run this exact revision.
-
-```bash
-git clone https://github.com/getmcpads-com/pinterest-ads-mcp-server.git
+git clone --branch v2.0.0 --depth 1 https://github.com/getmcpads-com/pinterest-ads-mcp-server.git
 cd pinterest-ads-mcp-server
 npm ci
 npm run build
 ```
 
-Configure your MCP client to run `node` with the absolute path to `dist/cli.js` and the environment variables documented below.
+Configure your MCP client to run `node` with the absolute path to `dist/cli.js` and the platform credentials documented below.
+
+> **Prefer a managed connection?** [Use Pinterest Ads with hosted getmcpads](https://www.getmcpads.com/tools/pinterest-ads?utm_source=github&utm_medium=readme&utm_campaign=pinterest-ads). Connect your account, select the data your assistant may access and use the hosted MCP connection. See the site for current features and plans.
 
 ## What you get
 
@@ -155,7 +167,7 @@ npm start
 | `PINTEREST_APP_ID` | none | App ID, needed for refresh |
 | `PINTEREST_APP_SECRET` | none | App secret, needed for refresh |
 | `PINTEREST_AD_ACCOUNT_ID` | none | Optional default, saves passing it on every call |
-| `PINTEREST_ENABLE_WRITES` | *unset* | Set to `1` to register the 5 write tools |
+| `PINTEREST_ENABLE_WRITES` | *unset* | Set to `1` to register the 25 write tools |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` |
 
 Either the access token, or the refresh trio. The server refuses to start with neither.
@@ -211,56 +223,76 @@ Two further guardrails:
 
 ## Tools
 
+Every tool is listed below. See [server-card.json](server-card.json) for complete parameter and output schemas.
+
 <details>
-<summary><b>26 read tools</b></summary>
+<summary><b>28 read tools</b></summary>
 
-### Discovery and health
 | Tool | Purpose |
-|---|---|
-| `pinterest_health_check` | Verifies the token and lists reachable ad accounts |
-| `pinterest_list_ad_accounts` | Every ad account the token can reach |
-| `pinterest_get_account_entities` | Campaigns, ad groups and ads in one call |
-| `pinterest_get_business_assets` | Businesses, members and invites. Identifiers redacted |
-| `pinterest_get_platform_resources` | Enumerations and reference data the API exposes |
+| --- | --- |
+| `pinterest_health_check` | Read-only Pinterest Ads health check. |
+| `pinterest_list_ad_accounts` | List Pinterest ad accounts accessible to the configured credentials. |
+| `pinterest_get_delivery_metrics` | Read Pinterest resources/delivery_metrics. |
+| `pinterest_validate_report` | Validate and preview how a Pinterest report will execute. |
+| `pinterest_run_report` | Run a read-only Pinterest Ads report. |
+| `pinterest_get_creative_assets` | Fetch Pinterest creative assets and period performance when available. |
+| `pinterest_run_catalog_report` | Run Pinterest catalog reporting by PRODUCT_GROUP or PRODUCT_ITEM. |
+| `pinterest_get_catalog_inventory` | List Pinterest catalog inventory surfaces: catalogs, product groups, product group promotions, and optional product samples. |
+| `pinterest_run_conversion_product_report` | Run Pinterest async conversion product reporting by brand, category, brand+category, SKU, or SKU group via reports/brand_category_sku. |
+| `pinterest_list_ad_creatives` | List the ad account's ad creatives across every status (the API silently omits ARCHIVED ads unless asked) with their pin media resolved: public i.pinimg.com image URLs up to 1200px, video cover, and video_url when the app is allowed to read it. |
+| `pinterest_get_write_schema` | Read the official Pinterest v5 native request schema and Sandbox limitations before composing a write. |
+| `pinterest_get_account_entities` | Read Pinterest ad-account entities and configuration. |
+| `pinterest_run_targeting_report` | Run live targeting analytics for an ad account, campaigns, ad groups, or ads, broken down by age, gender, location, interest, keyword, audience, placement, device, or other Pinterest targeting types. |
+| `pinterest_get_targeting_options` | Read Pinterest's official targeting option catalog for app type, gender, locale, age, location/geo, interest, keyword, or audience. |
+| `pinterest_get_keyword_intelligence` | Read assigned targeting keywords, Pinterest country-level keyword metrics, suggested terms, or related terms. |
+| `pinterest_get_audiences` | Read audience, customer-list, sharing, and Business-received audience inventory without uploading or changing audience membership. |
+| `pinterest_get_audience_insights` | Read aggregated Pinterest Audience Insights for the advertiser's total or engaged audience, Pinterest's total audience, or the scope/type endpoint. |
+| `pinterest_estimate_delivery` | Run non-mutating Pinterest planning computations: ad-group audience size, bid floors, or campaign delivery estimates. |
+| `pinterest_get_conversion_setup` | Inspect Pinterest conversion measurement configuration: conversion tags, oCPM-eligible/page-visit tags, Event Quality Score, advertiser-defined events, and conversion-deletion request status. |
+| `pinterest_get_catalog_diagnostics` | Read deep catalog inventory and diagnostics: catalogs, feeds, feed processing results, item issues, product groups, product counts/products, available filter values, and catalog item lookups. |
+| `pinterest_run_specialized_export` | Start or inspect non-mutating Pinterest data jobs for Marketing Mix Modeling (MMM), bulk advertiser entity downloads, or catalog diagnostics. |
+| `pinterest_get_lead_assets` | Read lead-form definitions and lead subscription configuration. |
+| `pinterest_get_business_assets` | Read Pinterest Business Access inventory: employers/linked businesses, assets, members, partners, assigned assets, received audiences, and invites. |
+| `pinterest_get_billing_and_orders` | Read billing profiles/invoices, invoice download URLs, order lines, ads-credit discounts, and SSIO account/order status. |
+| `pinterest_get_pin_analytics` | Read paid Pin analytics, organic multi/single-Pin analytics, user-account analytics, top Pins, or top video Pins. |
+| `pinterest_get_organic_inventory` | Read organic Pinterest content used alongside ads: Pins, boards, Pins on a board, Pin product tags, or search results. |
+| `pinterest_get_trends` | Read Pinterest Trends: top growing/monthly/yearly/seasonal keywords by supported region, growing product categories, product-category details, featured topics, or editorial articles. |
+| `pinterest_get_platform_resources` | Read Pinterest platform metadata and readiness resources: supported ad-account countries, delivery metric definitions, metrics readiness, lead-form questions, media upload metadata, commerce integration metadata, or the authenticated user account. |
 
-### Reporting
-| Tool | Purpose |
-|---|---|
-| `pinterest_run_report` | The main reporting tool, on raw column names |
-| `pinterest_validate_report` | Check a request *before* running it |
-| `pinterest_get_delivery_metrics` | Delivery and pacing signals |
-| `pinterest_run_targeting_report` | Performance broken down by targeting |
-| `pinterest_run_specialized_export` | Async exports for large result sets |
-| `pinterest_estimate_delivery` | Forecast reach for a targeting set |
+</details>
 
-### Audiences and targeting
-| Tool | Purpose |
-|---|---|
-| `pinterest_get_audiences` / `pinterest_get_audience_insights` | Audiences and their composition |
-| `pinterest_get_targeting_options` | Available targeting dimensions and values |
-| `pinterest_get_keyword_intelligence` | Keyword metrics and suggestions |
-| `pinterest_get_trends` | What is rising on Pinterest |
+<details>
+<summary><b>25 write tools</b></summary>
 
-### Creatives and organic
-| Tool | Purpose |
-|---|---|
-| `pinterest_get_creative_assets` | Ad creatives, media and their metadata |
-| `pinterest_get_organic_inventory` | Organic Pins and boards |
-| `pinterest_get_pin_analytics` | Performance of individual Pins |
+Disabled by default. Calls preview unless explicitly confirmed. Check the configuration and exact schema before use.
 
-### Commerce
 | Tool | Purpose |
-|---|---|
-| `pinterest_get_catalog_inventory` / `pinterest_get_catalog_diagnostics` | Product feeds and their health |
-| `pinterest_run_catalog_report` | Catalog performance |
-| `pinterest_run_conversion_product_report` | Conversions by product |
-| `pinterest_get_conversion_setup` | Conversion tags and events |
-
-### Operations
-| Tool | Purpose |
-|---|---|
-| `pinterest_get_billing_and_orders` | Billing and order history |
-| `pinterest_get_lead_assets` | Lead form configuration. **Lead records are never returned** |
+| --- | --- |
+| `pinterest_create_campaign` | Create a PAUSED campaign. |
+| `pinterest_update_campaign_status` | Update the status of an existing campaign. |
+| `pinterest_update_adgroup_status` | Update the status of an existing adgroup. |
+| `pinterest_update_ad_status` | Update the status of an existing ad. |
+| `pinterest_update_campaign_budget` | Set exactly one daily or lifetime campaign budget in major account currency units. |
+| `pinterest_update_adgroup_budget` | Set exactly one daily or lifetime ad group budget in major account currency units. |
+| `pinterest_update_campaign_configuration` | Update native campaign settings. |
+| `pinterest_update_adgroup_configuration` | Update native ad group settings. |
+| `pinterest_update_ad` | Update native ad settings. |
+| `pinterest_create_adgroup` | Create a PAUSED ad group with explicit native bidding, targeting, budget and schedule. |
+| `pinterest_create_ad` | Create a PAUSED ad from an accessible Pin. |
+| `pinterest_create_product_group_promotion` | Create a PAUSED shopping or collections promotion from a catalog product group. |
+| `pinterest_update_product_group_promotion` | Update a catalog product group promotion. |
+| `pinterest_create_collection_ad` | Create a PAUSED collection with an explicitly selected image/video hero Pin and an accessible catalog product group. |
+| `pinterest_create_board` | Create /boards in the selected advertiser context. |
+| `pinterest_update_board` | Update /boards in the selected advertiser context. |
+| `pinterest_create_pin` | Create /pins in the selected advertiser context. |
+| `pinterest_update_pin` | Update a Pin. |
+| `pinterest_register_media` | Register media upload; returned upload_url/parameters are not confirmation that a video is uploaded or ready. |
+| `pinterest_create_catalog` | Create /catalogs in the selected advertiser context. |
+| `pinterest_create_catalog_feed` | Create /catalogs/feeds in the selected advertiser context. |
+| `pinterest_update_catalog_feed` | Update /catalogs/feeds in the selected advertiser context. |
+| `pinterest_create_product_group` | Create /catalogs/product_groups in the selected advertiser context. |
+| `pinterest_update_product_group` | Update /catalogs/product_groups in the selected advertiser context. |
+| `pinterest_batch_catalog_items` | Submit native CREATE/UPDATE/UPSERT/DELETE catalog item operations. |
 
 </details>
 
@@ -300,7 +332,7 @@ Full policy, including how personal data is handled: [SECURITY.md](SECURITY.md).
 ## Looking for a managed, multi-platform version?
 
 [Try hosted Pinterest Ads](https://www.getmcpads.com/tools/pinterest-ads?utm_source=github&utm_medium=readme&utm_campaign=pinterest_ads_hosted) if you want to use this source without operating a local server.
-Get MCP Ads also connects advertising, Search Console and GA4 through one MCP URL.
+getmcpads also connects advertising, Search Console and GA4 through one MCP URL.
 Source availability and plan limits are listed on the site; connecting an account is still required.
 
 1. Follow the [Pinterest Ads connection guide](https://www.getmcpads.com/guides/sources/pinterest-ads).
@@ -329,46 +361,14 @@ Pinterest is a trademark of Pinterest, Inc.
 **This project is not affiliated with, endorsed by, or sponsored by Pinterest, Inc.**
 It is an independent client of a public API.
 
-## Version 1.1: platform updates and MCP contracts
+## MCP contracts and desktop bundle
 
-Every tool now declares read/write annotations, parameter descriptions and a structured output schema. Successful calls retain their original text and expose the same payload as `structuredContent.result`; provider fields depend on the selected report. Errors retain `isError: true`. The generated [server card](server-card.json) contains definitions only, with no account credentials.
+Every tool declares read/write annotations, parameter descriptions and a structured output schema. Successful calls expose the payload as `structuredContent.result`; errors retain `isError: true`. The generated [server card](server-card.json) contains definitions only.
 
-Writes remain disabled unless the platform-specific `ENABLE_WRITES` setting is enabled. Read the exact tool schema before calling: operations can require the owning account, currency, native configuration or a matching preview hash. Calls preview by default; applying a change requires `confirm: true`. A provider timeout can leave the outcome unknown: reconcile the account before retrying a creation or upload.
+Run `npm run bundle -- /path/to/output` to build a `.mcpb` desktop bundle from the current catalog. Credentials are entered locally during installation. Write tools remain disabled unless explicitly enabled.
 
-Additional tools included in this release:
+## More from getmcpads
 
-| Tool | Purpose |
-| --- | --- |
-| `pinterest_list_ad_creatives` | List the ad account's ad creatives across every status (the API silently omits ARCHIVED ads unless asked) with their pin media resolved: public i.pinimg.com image URLs up to 1200px, video cover, and video_url when the app is allowed to read it. |
-| `pinterest_get_write_schema` | Read the official Pinterest v5 native request schema and Sandbox limitations before composing a write.. |
-| `pinterest_update_ad_status` | Update the status of an existing ad. |
-| `pinterest_update_campaign_configuration` | Update native campaign settings. |
-| `pinterest_update_adgroup_configuration` | Update native ad group settings. |
-| `pinterest_update_ad` | Update native ad settings. |
-| `pinterest_create_adgroup` | Create a PAUSED ad group with explicit native bidding, targeting, budget and schedule. |
-| `pinterest_create_ad` | Create a PAUSED ad from an accessible Pin. |
-| `pinterest_create_product_group_promotion` | Create a PAUSED shopping or collections promotion from a catalog product group. |
-| `pinterest_update_product_group_promotion` | Update a catalog product group promotion. |
-| `pinterest_create_board` | Create /boards in the selected advertiser context. |
-| `pinterest_update_board` | Update /boards in the selected advertiser context. |
-| `pinterest_create_pin` | Create /pins in the selected advertiser context. |
-| `pinterest_update_pin` | Update a Pin. |
-| `pinterest_register_media` | Register media upload; returned upload_url/parameters are not confirmation that a video is uploaded or ready. |
-| `pinterest_create_catalog` | Create /catalogs in the selected advertiser context. |
-| `pinterest_create_catalog_feed` | Create /catalogs/feeds in the selected advertiser context. |
-| `pinterest_update_catalog_feed` | Update /catalogs/feeds in the selected advertiser context. |
-| `pinterest_create_product_group` | Create /catalogs/product_groups in the selected advertiser context. |
-| `pinterest_update_product_group` | Update /catalogs/product_groups in the selected advertiser context. |
-| `pinterest_batch_catalog_items` | Submit native CREATE/UPDATE/UPSERT/DELETE catalog item operations. |
+[Meta Ads](https://github.com/getmcpads-com/meta-ads-mcp-server) · [Google Ads](https://github.com/getmcpads-com/google-ads-mcp-server) · [Google Analytics 4](https://github.com/getmcpads-com/google-analytics-mcp-server) · [Google Search Console](https://github.com/getmcpads-com/google-search-console-mcp-server) · [TikTok Ads](https://github.com/getmcpads-com/tiktok-ads-mcp-server) · [X Ads](https://github.com/getmcpads-com/x-ads-mcp-server)
 
-The hosted GetMCPAds service additionally provides OAuth account selection and interactive review workspaces. Local servers use your own platform credentials and return native report data and media references.
-
-### Desktop bundle
-
-Run `npm run bundle -- /path/to/output` to build a `.mcpb` desktop bundle from the current catalogue. The bundle contains production dependencies, documented local configuration, and complete tool definitions. Provider credentials are entered locally during installation; write tools remain disabled unless explicitly enabled.
-
-## Additional native tools
-
-| Tool | Purpose |
-|---|---|
-| `pinterest_create_collection_ad` | Create a PAUSED collection with an explicitly selected image/video hero Pin and an accessible catalog product group. |
+Maintained by **Emmanuel** at [getmcpads](https://www.getmcpads.com). Questions: [hello@getmcpads.com](mailto:hello@getmcpads.com).
